@@ -11,9 +11,13 @@ class Compilador{
 		
 			arv = as.parseProg();
 		
-			
-			Interpretador backend = new Interpretador();
-			Integer codigo = backend.interpretaCodigo(arv);
+			// Com o compilador
+			CodeGen backend = new CodeGen();
+			String codigo = backend.geraCodigo(arv);
+
+			//Com o intepretador
+			// Interpretador backend = new Interpretador();
+			// Integer codigo = backend.interpretaCodigo(arv);
 			System.out.println(codigo);
 
 		}catch(Exception e)

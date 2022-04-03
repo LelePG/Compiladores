@@ -14,3 +14,10 @@
 * A chamada pro backend tá no arquivo compilador.
 * Tenho que substituir o que o codeGen tá fazendo por um interpretador
 * A estratégia é mudar o que tá acontecendo dentro dos ifs do codeGen, mas não posso tirar a recursão senão não vai dar pra percorrer a árvore.
+* Ao invés de imprimir uma string tenho que resolver a conta.
+
+## Exercício 4
+* Preciso ler um arquivo e colocar essas linhas em uma estrutura de pilha (ou talvez não)
+* De acordo com o comando presente na linha que eu ler, eu preciso fazer alguma coisa.
+* Tenho que ter um caso de ação pra cada um dos coisos da linguagem.
+* Quando tirar os elementos da pilha tem que cuidar que o mais recente vai ser o primerio a sair, e o segundo a ser considerado nas contas;
