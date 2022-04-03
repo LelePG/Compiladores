@@ -78,6 +78,8 @@ class AnaliseLexica {
           return (new Token(currchar, TokenType.MULT));
         case '-':
           return (new Token(currchar, TokenType.SUB));
+        case '/':
+          return (new Token(currchar, TokenType.DIV));
         default:
           throw (new Exception("Caractere inválido: " + ((int) currchar)));
       }
