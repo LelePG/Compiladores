@@ -57,12 +57,12 @@ class AnaliseLexica {
         char ultimoCharacter = '0';
         while (ultimoCharacter >= '0' && ultimoCharacter <= '9' ) {
           numeroMaisDigitos = numeroMaisDigitos.concat(pegaMaisNumeros);
-          arquivo.mark(0);
-          pegaMaisNumeros = Character.toString(arquivo.read());
-          ultimoCharacter = pegaMaisNumeros.charAt(pegaMaisNumeros.length() - 1);
-		  // System.out.println("Texto: " + numeroMaisDigitos+" ultimo: "+ultimoCharacter+" pega: "+ pegaMaisNumeros);
+          arquivo.mark(0);//salva a posição de leitura na "fita"
+          ultimoCharacter = (char) arquivo.read();
+          pegaMaisNumeros = Character.toString(ultimoCharacter);
+		  // System.out.println("Texto: " + numeroMaisDigitos+" ultimo: "+ultimoCharacter+" pega: "+ pegaMaisNumeros);//debug
         }
-        arquivo.reset();
+        arquivo.reset();//caso eu saia do laço, volta o leitor da "fita" pra última posição e ai eu não perco o sinal
 
         return (new Token(numeroMaisDigitos, TokenType.NUM));
       } else switch (currchar) {
