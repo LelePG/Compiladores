@@ -4,6 +4,8 @@ enum TokenType {
   NUM,
   SOMA,
   MULT,
+  SUB,//adicionado
+  DIV,//adicionado
   APar,
   FPar,
   EOF,
@@ -54,10 +56,10 @@ class AnaliseLexica {
       if (currchar >= '0' && currchar <= '9') {
         //Neste ponto do código, encontrei um número, agora tenho que verificar se existem números depois deste
         String pegaMaisNumeros = Character.toString(currchar);
-        char ultimoCharacter = '0';
+        char ultimoCharacter = currchar;
         while (ultimoCharacter >= '0' && ultimoCharacter <= '9' ) {
           numeroMaisDigitos = numeroMaisDigitos.concat(pegaMaisNumeros);
-          arquivo.mark(0);//salva a posição de leitura na "fita"
+          arquivo.mark(0);//salva a posição de leitura da "fita"
           ultimoCharacter = (char) arquivo.read();
           pegaMaisNumeros = Character.toString(ultimoCharacter);
 		  // System.out.println("Texto: " + numeroMaisDigitos+" ultimo: "+ultimoCharacter+" pega: "+ pegaMaisNumeros);//debug
@@ -74,6 +76,8 @@ class AnaliseLexica {
           return (new Token(currchar, TokenType.SOMA));
         case '*':
           return (new Token(currchar, TokenType.MULT));
+        case '-':
+          return (new Token(currchar, TokenType.SUB));
         default:
           throw (new Exception("Caractere inválido: " + ((int) currchar)));
       }
