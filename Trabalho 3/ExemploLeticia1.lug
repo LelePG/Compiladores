@@ -1,0 +1,11 @@
+function levarGuardaChuva(bool estaChovendo, bool precisoCaminhar){
+    if(estaChovendo && precisoCaminhar){
+        print(true);
+    }
+}
+
+
+var bool estaChovendoHoje :=false
+var bool precisoCaminharHoje:=false
+
+levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje)

@@ -1,0 +1,173 @@
+PARSER_BEGIN(Lugosi)
+import java.io.*;
+public class Lugosi {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ Lugosi analisador = new Lugosi(new FileInputStream(args[0]));
+ analisador.Lugosi();
+  }
+
+}
+
+PARSER_END(Lugosi)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <SEMI: ";">
+| <INT:"int">
+| <BOOL:"bool">
+| <FLOAT:"float">
+| <VOID:"void">
+| <ATTRIB:":=">
+| <APARENT: "(">
+| <FPARENT: ")">
+| <IF:"if">
+| <WHILE:"while">
+| <DO:"do">
+| <RETURN:"return">
+| <PRINT:"print">
+| <TRUE:"true">
+| <FALSE:"false">
+| <OPSOMA:"+">
+| <OPSUB:"-">
+| <OPMULT:"*">
+| <OPDIV:"/">
+| <OPAND:"&&">
+| <OPOR:"||">
+| <OPMENORQ:"<">
+| <OPMAIORQ:">">
+| <OPIGUAL:"==">
+| <OPCOMMA:",">
+| <FUNCTION: "function">
+| <TOKEN_ID: <LETRA> (<LETRAOUDIGITO>)* (<FINALSUBLINHADO>)* >
+| <TOKEN_NUMLITERAL: <DIGITOS> <FACAO_OPCIONAL> <EXPOENTE_OPCIONAL> >
+}
+
+TOKEN :
+{
+
+ <LETRA: ["a"-"z","A"-"Z"]>
+ |<DIGITO: ["0"-"9"]>
+ |<DIGITOS: (<DIGITO>)+>
+ |<FACAO_OPCIONAL: ("."(<DIGITOS>))?>
+ |<EXPOENTE_OPCIONAL: ("E"("+" | "-")? <DIGITOS>)? >
+ |<LETRAOUDIGITO: (<LETRA>| <DIGITO>) >
+ |<FINALSUBLINHADO: ("_"(<LETRAOUDIGITO>)+)>
+}
+
+
+
+void Lugosi () :
+{Token t;}
+{
+regraMain()
+(regraFunc())?
+<EOF> 
+}
+
+void regraMain():
+{}
+{
+  <MAIN> <ACHAVES>
+  regraVardecl()
+  regraSeqcomandos()
+  <FCHAVES>
+
+}
+
+void regraVardecl():
+{}
+{
+  (<VAR> regraTipo() <TOKEN_ID> <SEMI>)*
+}
+
+void regraTipo():
+{}
+{
+  (<INT> | <BOOL> | <FLOAT> | <VOID>)
+}
+
+void regraSeqcomandos():
+{}
+{
+  (regraComando())*
+}
+
+void regraComando():
+{}
+{
+  <TOKEN_ID> ((<ATTRIB> regraExp() <SEMI>)|(<APARENT> (regraListaExp())? <FPARENT> <SEMI>))
+| <IF> <APARENT> regraExp() <FPARENT> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
+| <WHILE> <APARENT> regraExp() <FPARENT> <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
+| <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> regraExp() <FPARENT> <SEMI> 
+| <RETURN> regraExp() <SEMI> 
+| <PRINT> <APARENT> regraExp() <FPARENT> <SEMI>
+}
+
+void regraExp():
+{}
+{
+  (<APARENT> regraExp() regraOp() regraExp() <FPARENT>)| regraFator()
+}
+
+void regraFator():
+{}
+{
+  <TOKEN_ID> (<APARENT> regraListaExp() <FPARENT>)? 
+  | <TOKEN_NUMLITERAL>
+  | <TRUE>
+  | <FALSE>
+}
+
+void regraOp():
+{}
+{
+  <OPSOMA>
+| <OPSUB>
+| <OPMULT>
+| <OPDIV>
+| <OPAND>
+| <OPOR>
+| <OPMENORQ>
+| <OPMAIORQ>
+| <OPIGUAL>
+}
+
+void regraListaExp():
+{}
+{
+  regraExp() regraListaExpAux()
+}
+
+void regraListaExpAux():
+{}
+{
+  (<OPCOMMA> regraExp() regraListaExpAux())?
+}
+
+void regraFunc():
+{}
+{
+  (<FUNCTION> regraTipo() <TOKEN_ID> <APARENT> regraListaArg() <FPARENT> <ACHAVES> regraVardecl()
+  regraSeqcomandos() <FCHAVES>)+
+}
+
+void regraListaArg():
+{}
+{
+  regraTipo() <TOKEN_ID> (<OPCOMMA> regraListaArg())?
+}
+
