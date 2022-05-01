@@ -120,7 +120,7 @@ void regraComando():
 void regraExp():
 {}
 {
-  (<APARENT> regraExp() regraOp() regraExp() <FPARENT>)| regraFator()
+  regraFator()| (<APARENT> regraExp() regraOp() regraExp() <FPARENT>)
 }
 
 void regraFator():
