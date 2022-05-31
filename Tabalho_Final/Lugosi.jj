@@ -1,0 +1,225 @@
+PARSER_BEGIN(Lugosi)
+import java.io.*;
+import java.util.ArrayList;
+
+
+class TIPO{
+  String tipo;
+  public TIPO(String tipo){
+    this.tipo=tipo;
+  }
+public String toString(){
+    return tipo; 
+  }
+
+}
+
+class OPERADOR{
+  String op;
+  public OPERADOR(String op){
+    this.op=op;
+  }
+public String toString(){
+    return op; 
+  }
+
+}
+
+class VARDECL{
+	ArrayList<TIPO> tipos;
+	ArrayList<String> ids;
+
+public VARDECL(ArrayList<TIPO> tipos, ArrayList<String> ids){
+    this.tipos = tipos;
+    this.ids = ids;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.tipos.size(); i++){
+    acumulador+= this.tipos.get(i)+ " " + this.ids.get(i) +";\n";
+  }
+    return acumulador;
+  }
+}
+
+
+
+public class Lugosi {
+
+  public static void main(String args[]) throws ParseException,IOException {
+    
+ Lugosi analisador = new Lugosi(new FileInputStream(args[0]));
+ analisador.Lugosi();
+  }
+
+}
+
+PARSER_END(Lugosi)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+TOKEN :
+{
+  <MAIN: "main">
+| <ACHAVES: "{">
+| <FCHAVES: "}">
+| <VAR: "var">
+| <SEMI: ";">
+| <INT:"int">
+| <BOOL:"bool">
+| <FLOAT:"float">
+| <VOID:"void">
+| <ATTRIB:":=">
+| <APARENT: "(">
+| <FPARENT: ")">
+| <IF:"if">
+| <WHILE:"while">
+| <DO:"do">
+| <RETURN:"return">
+| <PRINT:"print">
+| <TRUE:"true">
+| <FALSE:"false">
+| <OPSOMA:"+">
+| <OPSUB:"-">
+| <OPMULT:"*">
+| <OPDIV:"/">
+| <OPAND:"&&">
+| <OPOR:"||">
+| <OPMENORQ:"<">
+| <OPMAIORQ:">">
+| <OPIGUAL:"==">
+| <OPCOMMA:",">
+| <FUNCTION: "function">
+| <TOKEN_ID: <LETRA> (<LETRAOUDIGITO>)* (<FINALSUBLINHADO>)* >
+| <TOKEN_NUMLITERAL: <DIGITOS> <FACAO_OPCIONAL> <EXPOENTE_OPCIONAL> >
+}
+
+TOKEN :
+{
+
+ <LETRA: ["a"-"z","A"-"Z"]>
+ |<DIGITO: ["0"-"9"]>
+ |<DIGITOS: (<DIGITO>)+>
+ |<FACAO_OPCIONAL: ("."(<DIGITOS>))?>
+ |<EXPOENTE_OPCIONAL: ("E"("+" | "-")? <DIGITOS>)? >
+ |<LETRAOUDIGITO: (<LETRA>| <DIGITO>) >
+ |<FINALSUBLINHADO: ("_"(<LETRAOUDIGITO>)+)>
+}
+
+
+
+void Lugosi () :
+{Token t;}
+{
+regraMain()
+(regraFunc())?
+<EOF> 
+}
+
+void regraMain():
+{}
+{
+  <MAIN> <ACHAVES>
+  regraVardecl()
+  regraSeqcomandos()
+  <FCHAVES>
+
+}
+
+VARDECL regraVardecl():
+{ArrayList<TIPO> tipos = new ArrayList(); ArrayList<String> ids = new ArrayList(); TIPO tipo = null; Token id = null;}
+{
+  (<VAR> tipo = regraTipo() id = <TOKEN_ID> <SEMI> {tipos.add(tipo); ids.add(id.image);})*
+  {System.out.println("AAAAAA"+new VARDECL(tipos, ids).toString());}
+  {return new VARDECL(tipos, ids);}
+}
+
+TIPO regraTipo():
+{Token t = null;}
+{
+   (t = <INT> |t = <BOOL> | t =<FLOAT> | t =<VOID>)
+
+  {System.out.println("AAAA"+new TIPO(t.image).toString());}
+  {return new TIPO(t.image);}
+}
+
+void regraSeqcomandos():
+{}
+{
+  (regraComando())*
+}
+
+void regraComando():
+{}
+{
+  <TOKEN_ID> ((<ATTRIB> regraExp() <SEMI>)|(<APARENT> (regraListaExp())? <FPARENT> <SEMI>))
+| <IF> <APARENT> regraExp() <FPARENT> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
+| <WHILE> <APARENT> regraExp() <FPARENT> <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
+| <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> regraExp() <FPARENT> <SEMI> 
+| <RETURN> regraExp() <SEMI> 
+| <PRINT> <APARENT> regraExp() <FPARENT> <SEMI>
+}
+
+void regraExp():
+{}
+{
+  regraFator()| (<APARENT> regraExp() regraOp() regraExp() <FPARENT>)
+}
+
+void regraFator():
+{}
+{
+  <TOKEN_ID> (<APARENT> regraListaExp() <FPARENT>)? 
+  | <TOKEN_NUMLITERAL>
+  | <TRUE>
+  | <FALSE>
+}
+
+OPERADOR regraOp():
+{Token t = null;}
+{
+  (t = <OPSOMA>
+| t = <OPSUB>
+| t = <OPMULT>
+| t = <OPDIV>
+| t = <OPAND>
+| t = <OPOR>
+| t = <OPMENORQ>
+| t = <OPMAIORQ>
+| t = <OPIGUAL>)
+
+{System.out.println("AAAA"+new OPERADOR(t.image).toString());}
+  {return new OPERADOR(t.image);}
+}
+
+void regraListaExp():
+{}
+{
+  regraExp() regraListaExpAux()
+}
+
+void regraListaExpAux():
+{}
+{
+  (<OPCOMMA> regraExp() regraListaExpAux())?
+}
+
+void regraFunc():
+{}
+{
+  (<FUNCTION> regraTipo() <TOKEN_ID> <APARENT> regraListaArg() <FPARENT> <ACHAVES> regraVardecl()
+  regraSeqcomandos() <FCHAVES>)+
+}
+
+void regraListaArg():
+{}
+{
+  regraTipo() <TOKEN_ID> (<OPCOMMA> regraListaArg())?
+}
+

@@ -1,0 +1,646 @@
+PARSER_BEGIN(Lugosi)
+import java.io.*;
+import java.util.ArrayList;
+
+
+class ArvoreLugosi{
+	Main main;
+	ArrayList <Func> funcs;
+}
+
+class Main{
+	ArrayList <VarDecl> VarDecls;
+	ArrayList <Comando> Comandos;
+}
+
+class VarDecl{
+	Tipo tipo;
+	String id;
+}
+
+class Tipo{}
+class Int extends Tipo{}
+class Bool extends Tipo{}
+class Float extends Tipo{}
+class Void extends Tipo{}
+class Comando{}
+
+class Atribuicao extends Comando{
+	String id;
+	Exp exp;
+}
+
+class Funcao extends Comando{
+	String id;
+	ArrayList<Exp> arrayExp;
+}
+
+class IF extends Comando{
+	Exp exp;
+	ArrayList <Comando> comandos;
+}
+
+class While extends Comando{
+	Exp exp;
+	ArrayList <Comando> comandos;
+}
+
+class doWhile extends Comando{
+	Exp exp;
+	ArrayList <Comando> comandos;
+}
+
+class Return extends Comando{
+	Exp exp;
+}
+
+class Print extends Comando{
+	Exp exp;
+}
+
+class Exp{}
+
+class Fator extends Exp{
+	String id;
+	ArrayList<Exp> exp;
+}
+
+class ExpOp extends Exp{
+	String Op;
+	Exp e1, e2;
+}
+
+class Func{
+	Tipo tipo;
+	String id;
+	ListaArg listaargs;
+	ArrayList <VarDecl> vardecls;
+	ArrayList <Comando> comandos;
+}
+
+class ListaArg{
+	ArrayList<Tipo> tipos;
+	ArrayList<String> ids;
+}
+
+
+class Lugosi {
+	public static void main(String args[]) throws Exception{
+		
+		// abrir o arquivo passado por linha
+		// de comando contento o código em Lugosi:
+
+		FileInputStream fs = new FileInputStream(new File(args[0]));
+		
+		// Instanciar o parser da linguagem Lugosi passando
+		// como argumento o arquivo contendo o código
+		//Lugosi a ser processado:
+		Lugosi parser = new Lugosi(fs);
+		
+		// Chamar a primeira regra do parser que irá
+		// analisar o código e devolver a árvore sintática
+		ArvoreLugosi arvore = parser.Lugosi();
+
+		// passar a árvore para o gerador de código
+		// que deve gera um arquivo .java com o mesmo
+		geraCodigo(arvore, args[0]);
+	}
+
+    public static void geraCodigo(ArvoreLugosi arv, String fileName){
+        String[] separa = fileName.split("\\.");
+        processamentoLugosi(arv, separa[0]);
+    }
+
+
+	public static void processamentoLugosi(ArvoreLugosi prog, String fileName){
+		//System.out.print("main {\n");
+		writeInFile(fileName, "public static void main(String args[]) throws Exception {\n");
+
+	 	//Parte responsável por imprimir as declarações de variáveis
+	 	for(int i=0;i<prog.main.VarDecls.size();i++){
+	 	//System.out.print("var ");
+	 	//writeInFile(fileName, "var ");
+	 	if(prog.main.VarDecls.get(i).tipo instanceof Int){
+	 		//System.out.print("int ");
+	 		writeInFile(fileName, "int ");
+         }
+	 	else if (prog.main.VarDecls.get(i).tipo instanceof Bool){
+	 		//System.out.print("bool ");
+	 		writeInFile(fileName, "bool ");
+         }
+	 	else if (prog.main.VarDecls.get(i).tipo instanceof Float){
+	 		//System.out.print("float ");
+	 		writeInFile(fileName, "float ");
+         }
+	 	else{
+	 		//System.out.print("void ");
+	 		writeInFile(fileName, "void ");
+         }
+	 	//System.out.print(prog.main.VarDecls.get(i).id+";");
+	 	writeInFile(fileName, prog.main.VarDecls.get(i).id+";");
+	 	}
+	 	//System.out.print("\n");
+	 	writeInFile(fileName, "\n");
+
+		 //Parte resposável por imprimir os comandos
+		 for(int i=0;i<prog.main.Comandos.size();i++){
+		 	seqComandos(prog.main.Comandos.get(i), fileName);
+		 }
+
+		 //System.out.print("}\n");
+		 writeInFile(fileName, "}\n");
+
+		 if(prog.funcs != null){
+			 if(prog.funcs.size() > 0){
+			 	for(int i=0;i<prog.funcs.size();i++){
+			 		imprimeFunc(prog.funcs.get(i), fileName);
+			 	}
+			 }
+		}	 
+
+		 //System.out.print("\n");
+         writeInFile(fileName, "\n");
+
+	}
+	
+	public static void seqComandos(Comando c, String fileName){
+		if(c instanceof Atribuicao)
+			comandoAtribuicao((Atribuicao)c, fileName);
+		else if(c instanceof Funcao)
+			comandoFuncao((Funcao)c,fileName);
+		else if(c instanceof IF)
+	 		comandoIf((IF)c, fileName);
+	 	else if(c instanceof While)
+	 		comandoWhile((While)c, fileName);
+	 	else if(c instanceof doWhile)
+	 		comandodoWhile((doWhile)c, fileName);
+	 	else if(c instanceof Return)
+	 		comandoReturn((Return)c, fileName);
+	 	else
+	 		comandoPrint((Print)c, fileName);
+	}
+
+	public static void comandoAtribuicao(Atribuicao c, String fileName){
+		//System.out.print(c.id+ " := ");
+		writeInFile(fileName, c.id+" = ");
+		imprimeExp(c.exp, fileName);
+		//System.out.print(";\n");
+		writeInFile(fileName, ";\n");
+	}
+
+	public static void comandoFuncao(Funcao c, String fileName){
+		//System.out.print(c.id+ "(");
+        writeInFile(fileName, c.id + "(");
+		for(int i=0;i<c.arrayExp.size();i++){
+			imprimeExp(c.arrayExp.get(i), fileName);
+			if(i<c.arrayExp.size()-1){
+				//System.out.print(", ");
+				writeInFile(fileName, ", ");
+            }
+		}
+		//System.out.print(");\n");
+		writeInFile(fileName, ");\n");
+	}
+
+	public static void comandoIf(IF c, String fileName){
+		//System.out.print("if(");
+        writeInFile(fileName, "if(");
+		imprimeExp(c.exp, fileName);
+		//System.out.print("){\n");
+        writeInFile(fileName, "){\n");
+		for(int i=0;i<c.comandos.size();i++)
+			seqComandos(c.comandos.get(i), fileName);
+		//System.out.print("};\n");
+        writeInFile(fileName, "}\n");
+
+	}
+
+	public static void comandoWhile(While c, String fileName){
+		//System.out.print("while(");
+        writeInFile(fileName, "while(");
+		imprimeExp(c.exp, fileName);
+		//System.out.print(") do {\n");
+        writeInFile(fileName, ") do {\n");
+		for(int i=0;i<c.comandos.size();i++)
+			seqComandos(c.comandos.get(i), fileName);
+		//System.out.print("};\n");
+        writeInFile(fileName, "}\n");
+	}
+
+	public static void comandodoWhile(doWhile c, String fileName){
+		//System.out.print("do{\n");
+        writeInFile(fileName, "do{\n");
+		for(int i=0;i<c.comandos.size();i++)
+			seqComandos(c.comandos.get(i), fileName);
+		//System.out.print("\n}while(");
+        writeInFile(fileName, "\n}while(");
+		imprimeExp(c.exp, fileName);
+		//System.out.print(");\n");
+        writeInFile(fileName, ");\n");
+	}
+
+	public static void comandoReturn(Return c, String fileName){
+		//System.out.print("return ");
+        writeInFile(fileName, "return ");
+		imprimeExp(c.exp, fileName);
+		//System.out.print(";\n");
+        writeInFile(fileName, ";\n");
+	}
+
+	public static void comandoPrint(Print c, String fileName){
+		//System.out.print("print(");
+        writeInFile(fileName, "System.out.println(");
+		imprimeExp(c.exp, fileName);
+		//System.out.print(");\n");
+        writeInFile(fileName, ");\n");
+	}
+
+	public static void imprimeExp(Exp e, String fileName){
+		//System.out.print("(");
+        //writeInFile(fileName, "(");
+		Fator f;
+		ExpOp eo;
+		if(e instanceof Fator){
+			f = (Fator)e;
+			//System.out.print(f.id);
+            writeInFile(fileName, f.id);
+			if(f.exp != null){
+				if(f.exp.size() > 0){
+					for(int i = 0;i<f.exp.size();i++){
+						imprimeExp(f.exp.get(i), fileName);
+						//System.out.print(", ");
+                        writeInFile(fileName, ", ");
+					}
+				}
+			}
+		}
+		else{
+			eo = (ExpOp)e;
+			f = (Fator)eo.e1;
+			//System.out.print(f.id);
+            writeInFile(fileName, f.id);
+			if(f.exp != null){
+				if(f.exp.size() > 0){
+					for(int i = 0;i<f.exp.size();i++){
+						imprimeExp(f.exp.get(i), fileName);
+						//System.out.print(", ");
+                        writeInFile(fileName, ", ");
+
+					}
+				}
+			}
+			//System.out.print(" " + eo.Op + " ");
+            writeInFile(fileName, " " + eo.Op + " ");
+			imprimeExp(eo.e2, fileName);
+		}
+		//System.out.print(")");
+        //writeInFile(fileName, ")");
+	}
+
+	public static void imprimeFunc(Func f, String fileName){
+		//System.out.print("function");
+        writeInFile(fileName, "public static");
+		if(f.tipo instanceof Int){
+			//System.out.print(" int ");
+            writeInFile(fileName, " int ");
+        }
+		else if (f.tipo instanceof Bool){
+			//System.out.print(" bool ");
+            writeInFile(fileName, " bool ");
+        }
+		else if (f.tipo instanceof Void){
+			//System.out.print(" void ");
+            writeInFile(fileName, " void ");
+        }
+		else{
+			//System.out.print(" float ");
+            writeInFile(fileName, " float ");
+        }
+		//System.out.print(f.id+"(");
+        writeInFile(fileName, f.id+"(");
+
+
+		for(int i=0;i<f.listaargs.ids.size();i++){
+			if(f.listaargs.tipos.get(i) instanceof Int){
+				//System.out.print("int ");
+                writeInFile(fileName, "int ");
+            }
+			else if(f.listaargs.tipos.get(i) instanceof Bool){
+				//System.out.print("bool ");
+                writeInFile(fileName, "bool ");
+            }
+            else if(f.listaargs.tipos.get(i) instanceof Void){
+                //System.out.println("void ");
+                writeInFile(fileName, "void ");
+            }
+            else {
+                //System.out.println("float ");
+                writeInFile(fileName, "float ");
+            }
+
+			//System.out.print(f.listaargs.ids.get(i));
+            writeInFile(fileName, f.listaargs.ids.get(i));
+			if(i != f.listaargs.ids.size()-1){
+				//System.out.print(", ");
+                writeInFile(fileName, ", ");
+            }
+		}
+
+		//System.out.print("){\n");
+        writeInFile(fileName, "){\n");
+
+		for(int i=0;i<f.vardecls.size();i++){
+			if(f.vardecls.get(i).tipo instanceof Int){
+				//System.out.print("int ");
+                writeInFile(fileName, "int ");
+            }
+			else if(f.vardecls.get(i).tipo instanceof Bool){
+				//System.out.print("bool ");
+                writeInFile(fileName, "bool ");
+            }
+            else if(f.vardecls.get(i).tipo instanceof Void){
+                //System.out.println("void ");
+                writeInFile(fileName, "void ");
+            }
+            else{
+                //System.out.println("float ");
+                writeInFile(fileName, "float ");
+            }
+			//System.out.print(f.vardecls.get(i).id+"; ");
+            writeInFile(fileName, f.vardecls.get(i).id+"; ");
+		}
+
+		//System.out.print("\n");
+        writeInFile(fileName, "\n");
+
+		for(int i=0;i<f.comandos.size();i++){
+			seqComandos(f.comandos.get(i), fileName);
+		}
+
+		//System.out.print("\n}");
+        writeInFile(fileName, "\n}");
+	}
+	
+	public static void writeInFile(String fileName, String prog){
+	    try{
+		FileWriter myWriter = new FileWriter(fileName + ".java", true);
+		myWriter.write(prog);
+		myWriter.close();
+	    } catch (IOException e){
+	    	System.out.print("An error occurred.");
+	    	e.printStackTrace();
+	    }
+	}  
+
+	
+}
+
+
+PARSER_END(Lugosi)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+//Convenções léxicas
+String TOKEN_id():
+{String t, c, v=null, x=null; Token s;}
+{
+	s = <LETRA> (c = Letraoudigito(){if(v == null){v = c;}else{v+=c;}})* (x = Finalsublinhado())?
+
+	{t = (String)s.image;
+	if(v != null){t+=v;}
+	if(x != null){t+=x;}
+	return t;}
+}
+
+String TOKEN_numliteral():
+{String t, s, h, i;}
+{
+	s = Digitos() h = Facao_opcional() i = Expoente_opcional()
+	{t = s;
+	if(h != null)
+		t+=h;
+	if(i != null)
+		t+=i;
+	return t;}
+}
+
+TOKEN :
+{
+  <LETRA: ["a" - "z", "A" - "Z"]>
+|
+  <DIGITO: ["0" - "9"]>  
+}
+
+String Digitos():
+{String t =  new String(); Token s;}
+{
+	(s = <DIGITO> {t += s.image;})+
+	{return t;}
+}
+
+String Facao_opcional():
+{String t = null, g;Token c;}
+{
+	(c = "." g = Digitos(){t = c.image + g;})?
+	{return t;}
+}
+
+
+String Expoente_opcional():
+{String t = null, c; Token a =  new Token(),b = new Token();}
+{
+	(a = "E" (b = "+" | b = "-")? c = Digitos(){t = a.image + b.image + c;})?
+	{return t;}
+}
+
+String Letraoudigito():
+{Token s;}
+{
+	(s = <LETRA> {return s.image;}| s = <DIGITO>{return s.image;})
+}
+
+String Finalsublinhado():
+{String t, s; Token c;}
+{
+	c = "_" {t = c.image;}(s = Letraoudigito(){t += s;})+
+	{return t;}
+}
+
+ArvoreLugosi Lugosi():
+{ArvoreLugosi arv = new ArvoreLugosi(); Func f; arv.funcs = new ArrayList<Func>();}
+{
+
+	arv.main = Main() (f = Func(){arv.funcs.add(f);})?
+	{return arv;}
+}
+
+Main Main():
+{Main m = new Main();}
+{
+	"main" "{" m.VarDecls = VarDecl() m.Comandos = Sequcomandos() "}"
+	{return m;}
+
+}
+
+ArrayList<VarDecl> VarDecl():
+{ArrayList<VarDecl> vars = new ArrayList<VarDecl>(), varReturn = null; VarDecl v = new VarDecl();}
+{
+	("var" v.tipo = Tipo() v.id = TOKEN_id() {vars.add(v);} ";" varReturn = VarDecl())? 
+	
+	{if(varReturn != null){
+		for(int i=0; i<varReturn.size();i++){
+			vars.add(varReturn.get(i));
+		}
+		}
+		return vars;}
+	
+}
+
+
+Tipo Tipo():
+{}
+{
+	"int"{return new Int();} | "bool" {return new Bool();} | "float"{return new Float();} | "void" {return new Void();}
+}
+
+ArrayList<Comando> Sequcomandos():
+{ArrayList<Comando> comands = new ArrayList<Comando>(), cm1 = null; Comando c;}
+{
+	(c = Comando(){comands.add(c);} cm1 = Sequcomandos())?
+
+	{if(cm1 != null){
+		for(int i = 0;i<cm1.size();i++)
+			comands.add(cm1.get(i));
+
+
+	}
+	return comands;}
+}
+
+Comando Comando():
+{Comando co = new Comando(); String id; Exp e; ArrayList<Comando> arrayCo; ArrayList<Exp> arrayE = null;}
+{
+	id = TOKEN_id() (":=" e = Exp() ";" {Atribuicao a = new Atribuicao();  a.id = id; a.exp = e; return a;} 
+	| "(" (arrayE = Listaexp())? ")" ";" {Funcao f = new Funcao(); f.id = id; f.arrayExp = arrayE; return f;})
+	| "if" "(" e = Exp() ")" "{" arrayCo = Sequcomandos() "}" ";" {IF i = new IF(); i.exp = e; i.comandos = arrayCo; return i; }
+	| "while" "(" e = Exp() ")" "do" "{" arrayCo = Sequcomandos() "}" ";" {While w = new While(); w.exp = e; w.comandos = arrayCo; return w; }
+	| "do" "{" arrayCo = Sequcomandos() "}" "while" "(" e = Exp() ")" ";" {doWhile dw = new doWhile(); dw.exp = e; dw.comandos = arrayCo; return dw; }
+	| "return" e = Exp() ";" {Return r = new Return(); r.exp = e; return r;}
+	| "print" "(" e = Exp()  ")" ";" {Print p = new Print(); p.exp = e; return p;}
+}
+
+Exp Exp():
+{Exp exp1 = null; ExpOp exp2=null;}
+{
+	"(" exp1 = Fator() exp2 = ExpL() ")"
+	{if(exp2 == null){
+		return exp1;
+	}else{
+		exp2.e1 = exp1;
+		return exp2;
+	}
+	}
+}
+
+ExpOp ExpL():
+{ExpOp exp = new ExpOp();}
+{
+	(exp.Op = Op() exp.e1 = Fator() exp.e2 = ExpL(){if(exp.e2 == null){
+												exp.e2 = exp.e1;
+												return exp;
+												}else{
+												return exp;
+												}
+												})? {return null;}
+	
+}
+
+Fator Fator():
+{Fator f = new Fator(); ArrayList<Exp> exp = null; String s; Token t;}
+{
+	s = TOKEN_id()("(" exp = Listaexp() ")")? {if(exp!= null){f.exp = exp;}f.id = s; return f;}
+	| s = TOKEN_numliteral() {if(exp!= null){f.exp = exp;}f.id = s; return f;}
+	| t = "true" {s = (String)t.image;if(exp!= null){f.exp = exp;}f.id = s; return f;}
+	| t = "false" {s = (String)t.image;if(exp!= null){f.exp = exp;}f.id = s; return f;}
+
+}
+
+String Op():
+{Token t;}
+{
+	t = "+" {return t.image;}| t = "-" {return t.image;}| t = "*" {return t.image;}| t = "/" {return t.image;}| t = "&&" {return t.image;}| t = "||" {return t.image;}|
+	t = "<" {return t.image;}| t = ">" {return t.image;}| t = "==" {return t.image;}
+}
+
+ArrayList<Exp> Listaexp():
+{ArrayList<Exp> exp = new ArrayList<Exp>(), exp1 = null; Exp exp2;}
+{
+	exp2 = Exp() {exp.add(exp2);} exp1 = ListaexpL()
+	{if (exp1 != null){
+		for(int i = 0;i< exp1.size();i++){
+			exp.add(exp1.get(i));
+		}
+	}
+    return exp;
+    }
+}
+
+ArrayList<Exp> ListaexpL():
+{ArrayList<Exp> exp = new ArrayList<Exp>(), exp1; Exp exp2;}
+{
+	("," exp2 = Exp() {exp.add(exp2);} exp1 = ListaexpL()
+
+	{if (exp1 != null){
+        for(int i = 0;i< exp1.size();i++){
+            exp.add(exp1.get(i));
+		}
+	}
+        return exp;}
+    )? {return null;}
+}
+
+Func Func():
+{Func c = new Func();}
+{
+	"function" c.tipo = Tipo() c.id = TOKEN_id() "(" (c.listaargs = ListaArg())? ")" "{" c.vardecls = VarDecl() c.comandos =  Sequcomandos() "}"
+	{return c;}
+}
+
+ListaArg ListaArg():
+{ListaArg l = new ListaArg(), l1 = null; Tipo t; String id;}
+{
+	t = Tipo() id = TOKEN_id() l1 = ListaArgL()
+	{l.tipos = new ArrayList<Tipo>(); l.ids = new ArrayList<String>();
+	 l.tipos.add(t); l.ids.add(id);
+	 if(l1 != null){
+	 	for(int i = 0; i < l1.tipos.size();i++){
+	 		l.tipos.add(l1.tipos.get(i));
+	 		l.ids.add(l1.ids.get(i));
+	 	}
+	 }
+	 return l;
+	 }
+}
+
+ListaArg ListaArgL():
+{ListaArg l = new ListaArg(), l1 = null; Tipo t; String id;}
+{
+	("," t = Tipo() id = TOKEN_id() l1 = ListaArgL()
+
+	{l.tipos = new ArrayList<Tipo>(); l.ids = new ArrayList<String>();
+        l.tipos.add(t); l.ids.add(id);
+		if(l1 != null){
+            for(int i = 0; i < l1.tipos.size();i++){
+                l.tipos.add(l1.tipos.get(i));
+				l.ids.add(l1.ids.get(i));
+			}
+		}
+		return l;}
+	)? {return null;}
+}

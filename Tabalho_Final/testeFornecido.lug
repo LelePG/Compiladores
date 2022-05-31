@@ -1,0 +1,25 @@
+main{
+    var bool estaChovendoHoje;
+    var bool precisoCaminharHoje;
+    var int outraCoisa;
+    estaChovendo:=true;
+    precisoCaminhar:=false;
+    levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje);
+}
+
+function void levarGuardaChuva(int estaCaaaahovendo, float precisoCaminhaaar){
+    if ((estaChovendo && precisoCaminhar)) {
+        print(true);
+    };
+    return 1;
+}
+
+
+function void levarGuardaChuva(bool estaChovendo, bool precisoCaminhar){
+    if ((estaChovendo && precisoCaminhar)) {
+        print(true);
+    };
+    return 1;
+}
+
+
