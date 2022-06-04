@@ -42,7 +42,89 @@ public String toString(){
   }
 }
 
+class LISTAARG{
+        ArrayList<TIPO> tipos;
+        ArrayList<String> ids;
 
+public LISTAARG(ArrayList<TIPO> tipos, ArrayList<String> ids){
+    this.tipos = tipos;
+    this.ids = ids;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.tipos.size(); i++){
+    acumulador+= this.tipos.get(i)+ " " + this.ids.get(i);
+  if(i< this.tipos.size()-1){
+    acumulador+=",";
+  }
+  }
+    return acumulador;
+  }
+}
+
+
+
+        class FUNC{
+    TIPO tipo;
+  String id;
+  LISTAARG argumentos;
+  VARDECL variaveis;
+
+public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis)
+{
+    this.tipo = tipo;
+    this.id = id;
+    this.argumentos=argumentos;
+    this.variaveis = variaveis;
+  }
+public String toString(){
+  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos+")"+"{" ;
+  acumulador+=variaveis.toString();
+  acumulador+="}";
+  return acumulador;
+
+}
+}
+
+
+class COMANDO{
+}
+class COMANDOCONTROLADO extends COMANDO{
+  ArrayList<EXP> exps;
+        ArrayList<String> seqcomandos;
+}
+
+class IF extends COMANDOCONTROLADO{}
+class WHILE extends COMANDOCONTROLADO{}
+class DOWHILE extends COMANDOCONTROLADO{}
+
+class SEQCOMANDOS{}
+
+class FATOR{
+  String fator;
+  public FATOR(String fator){
+    this.fator=fator;
+  }
+public String toString(){
+    return fator;
+  }
+
+}
+
+class EXP{
+  OPERADOR op;
+  EXP exp1;
+  EXP exp2;
+  public EXP(EXP exp1, OPERADOR op, EXP exp2){
+    this.op=op;
+    this.exp1 = exp1;
+    this.exp2 = exp2;
+  }
+public String toString(){
+    return "aolooo";
+  }
+
+}
 
 public class Lugosi implements LugosiConstants {
 
@@ -122,7 +204,7 @@ public class Lugosi implements LugosiConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public void regraSeqcomandos() throws ParseException {
+  static final public SEQCOMANDOS regraSeqcomandos() throws ParseException {
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -140,16 +222,19 @@ public class Lugosi implements LugosiConstants {
       }
       regraComando();
     }
+   {if (true) return new SEQCOMANDOS();}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void regraComando() throws ParseException {
+  static final public COMANDO regraComando() throws ParseException {
+ Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TOKEN_ID:
-      jj_consume_token(TOKEN_ID);
+      tPrincipal = jj_consume_token(TOKEN_ID);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case ATTRIB:
         jj_consume_token(ATTRIB);
-        regraExp();
+        exp = regraExp();
         jj_consume_token(SEMI);
         break;
       case APARENT:
@@ -176,9 +261,9 @@ public class Lugosi implements LugosiConstants {
       }
       break;
     case IF:
-      jj_consume_token(IF);
+      tPrincipal = jj_consume_token(IF);
       jj_consume_token(APARENT);
-      regraExp();
+      exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(ACHAVES);
       regraSeqcomandos();
@@ -186,9 +271,9 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(SEMI);
       break;
     case WHILE:
-      jj_consume_token(WHILE);
+      tPrincipal = jj_consume_token(WHILE);
       jj_consume_token(APARENT);
-      regraExp();
+      exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(DO);
       jj_consume_token(ACHAVES);
@@ -197,25 +282,25 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(SEMI);
       break;
     case DO:
-      jj_consume_token(DO);
+      tPrincipal = jj_consume_token(DO);
       jj_consume_token(ACHAVES);
       regraSeqcomandos();
       jj_consume_token(FCHAVES);
       jj_consume_token(WHILE);
       jj_consume_token(APARENT);
-      regraExp();
+      exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(SEMI);
       break;
     case RETURN:
-      jj_consume_token(RETURN);
-      regraExp();
+      tPrincipal = jj_consume_token(RETURN);
+      exp = regraExp();
       jj_consume_token(SEMI);
       break;
     case PRINT:
-      jj_consume_token(PRINT);
+      tPrincipal = jj_consume_token(PRINT);
       jj_consume_token(APARENT);
-      regraExp();
+      exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(SEMI);
       break;
@@ -224,21 +309,25 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
+ System.out.println("AAAA"+ tPrincipal.image);
+ {if (true) return new COMANDO();}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void regraExp() throws ParseException {
+  static final public EXP regraExp() throws ParseException {
+ FATOR f=null; OPERADOR op=null; EXP exp1=null; EXP exp2=null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TRUE:
     case FALSE:
     case TOKEN_ID:
     case TOKEN_NUMLITERAL:
-      regraFator();
+      f = regraFator();
       break;
     case APARENT:
       jj_consume_token(APARENT);
-      regraExp();
-      regraOp();
-      regraExp();
+      exp1 = regraExp();
+      op = regraOp();
+      exp2 = regraExp();
       jj_consume_token(FPARENT);
       break;
     default:
@@ -246,16 +335,20 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
+   System.out.println("cheguei aqui");
+   {if (true) return new EXP(exp1,op,exp2);}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void regraFator() throws ParseException {
+  static final public FATOR regraFator() throws ParseException {
+ Token t; boolean regras; ArrayList<Boolean> regrasFinais = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TOKEN_ID:
-      jj_consume_token(TOKEN_ID);
+      t = jj_consume_token(TOKEN_ID);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case APARENT:
         jj_consume_token(APARENT);
-        regraListaExp();
+        regras = regraListaExp();
         jj_consume_token(FPARENT);
         break;
       default:
@@ -264,19 +357,21 @@ public class Lugosi implements LugosiConstants {
       }
       break;
     case TOKEN_NUMLITERAL:
-      jj_consume_token(TOKEN_NUMLITERAL);
+      t = jj_consume_token(TOKEN_NUMLITERAL);
       break;
     case TRUE:
-      jj_consume_token(TRUE);
+      t = jj_consume_token(TRUE);
       break;
     case FALSE:
-      jj_consume_token(FALSE);
+      t = jj_consume_token(FALSE);
       break;
     default:
       jj_la1[9] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
+   {if (true) return new FATOR(t.image);}
+    throw new Error("Missing return statement in function");
   }
 
   static final public OPERADOR regraOp() throws ParseException {
@@ -319,9 +414,11 @@ public class Lugosi implements LugosiConstants {
     throw new Error("Missing return statement in function");
   }
 
-  static final public void regraListaExp() throws ParseException {
+  static final public boolean regraListaExp() throws ParseException {
     regraExp();
     regraListaExpAux();
+ {if (true) return true;}
+    throw new Error("Missing return statement in function");
   }
 
   static final public void regraListaExpAux() throws ParseException {
@@ -337,17 +434,18 @@ public class Lugosi implements LugosiConstants {
     }
   }
 
-  static final public void regraFunc() throws ParseException {
+  static final public FUNC regraFunc() throws ParseException {
+ TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null;
     label_3:
     while (true) {
       jj_consume_token(FUNCTION);
-      regraTipo();
-      jj_consume_token(TOKEN_ID);
+      tipo = regraTipo();
+      id = jj_consume_token(TOKEN_ID);
       jj_consume_token(APARENT);
-      regraListaArg();
+      argumentos = regraListaArg(new ArrayList<TIPO>(),new ArrayList<String>());
       jj_consume_token(FPARENT);
       jj_consume_token(ACHAVES);
-      regraVardecl();
+      variaveis = regraVardecl();
       regraSeqcomandos();
       jj_consume_token(FCHAVES);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -359,20 +457,28 @@ public class Lugosi implements LugosiConstants {
         break label_3;
       }
     }
+   System.out.println("BBBBBB "+ new FUNC(tipo, id.image, argumentos, variaveis).toString());
+   {if (true) return new FUNC(tipo, id.image, argumentos, variaveis);}
+    throw new Error("Missing return statement in function");
   }
 
-  static final public void regraListaArg() throws ParseException {
-    regraTipo();
-    jj_consume_token(TOKEN_ID);
+  static final public LISTAARG regraListaArg(ArrayList<TIPO> tiposParam, ArrayList<String> idsParam) throws ParseException {
+ TIPO tipo = null; Token id = null;
+    tipo = regraTipo();
+    id = jj_consume_token(TOKEN_ID);
+                                       tiposParam.add(tipo); idsParam.add(id.image);
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case OPCOMMA:
       jj_consume_token(OPCOMMA);
-      regraListaArg();
+      regraListaArg(tiposParam, idsParam);
       break;
     default:
       jj_la1[13] = jj_gen;
       ;
     }
+   System.out.println("BBBBBB "+new LISTAARG(tiposParam, idsParam).toString());
+   {if (true) return new LISTAARG(tiposParam, idsParam);}
+    throw new Error("Missing return statement in function");
   }
 
   static private boolean jj_initialized_once = false;

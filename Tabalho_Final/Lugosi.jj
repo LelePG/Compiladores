@@ -42,7 +42,89 @@ public String toString(){
   }
 }
 
+class LISTAARG{
+	ArrayList<TIPO> tipos;
+	ArrayList<String> ids;
 
+public LISTAARG(ArrayList<TIPO> tipos, ArrayList<String> ids){
+    this.tipos = tipos;
+    this.ids = ids;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.tipos.size(); i++){
+    acumulador+= this.tipos.get(i)+ " " + this.ids.get(i);
+  if(i< this.tipos.size()-1){
+    acumulador+=",";
+  }
+  }
+    return acumulador;
+  }
+}
+
+
+
+	class FUNC{
+    TIPO tipo;
+  String id;
+  LISTAARG argumentos;
+  VARDECL variaveis;
+
+public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis)
+{
+    this.tipo = tipo;
+    this.id = id;
+    this.argumentos=argumentos;
+    this.variaveis = variaveis;
+  }
+public String toString(){
+  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos+")"+"{" ;
+  acumulador+=variaveis.toString();
+  acumulador+="}";
+  return acumulador;
+  
+}
+}
+
+
+class COMANDO{
+}
+class COMANDOCONTROLADO extends COMANDO{
+  ArrayList<EXP> exps;
+	ArrayList<String> seqcomandos;
+}
+
+class IF extends COMANDOCONTROLADO{}
+class WHILE extends COMANDOCONTROLADO{}
+class DOWHILE extends COMANDOCONTROLADO{}
+
+class SEQCOMANDOS{}
+
+class FATOR{
+  String fator;
+  public FATOR(String fator){
+    this.fator=fator;
+  }
+public String toString(){
+    return fator; 
+  }
+
+}
+
+class EXP{
+  OPERADOR op; 
+  EXP exp1; 
+  EXP exp2;
+  public EXP(EXP exp1, OPERADOR op, EXP exp2){
+    this.op=op;
+    this.exp1 = exp1;
+    this.exp2 = exp2;
+  }
+public String toString(){
+    return "aolooo"; 
+  }
+
+}
 
 public class Lugosi {
 
@@ -149,36 +231,44 @@ TIPO regraTipo():
   {return new TIPO(t.image);}
 }
 
-void regraSeqcomandos():
+SEQCOMANDOS regraSeqcomandos():
 {}
 {
   (regraComando())*
+  {return new SEQCOMANDOS();}
 }
 
-void regraComando():
-{}
+COMANDO regraComando():
+{Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null; }
 {
-  <TOKEN_ID> ((<ATTRIB> regraExp() <SEMI>)|(<APARENT> (regraListaExp())? <FPARENT> <SEMI>))
-| <IF> <APARENT> regraExp() <FPARENT> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
-| <WHILE> <APARENT> regraExp() <FPARENT> <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <SEMI> 
-| <DO> <ACHAVES> regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> regraExp() <FPARENT> <SEMI> 
-| <RETURN> regraExp() <SEMI> 
-| <PRINT> <APARENT> regraExp() <FPARENT> <SEMI>
+  (tPrincipal = <TOKEN_ID> ((<ATTRIB> exp = regraExp() <SEMI>)|(<APARENT> (regraListaExp())? <FPARENT> <SEMI>))
+|  tPrincipal = <IF> <APARENT> exp = regraExp() <FPARENT> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
+| tPrincipal = <WHILE> <APARENT> exp = regraExp() <FPARENT> <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
+| tPrincipal= <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> exp = regraExp() <FPARENT> <SEMI> 
+| tPrincipal = <RETURN> exp = regraExp() <SEMI> 
+| tPrincipal = <PRINT> <APARENT> exp = regraExp() <FPARENT> <SEMI>)
+{System.out.println("AAAA"+ tPrincipal.image);}
+{return new COMANDO();}
+
+  
 }
 
-void regraExp():
-{}
+EXP regraExp():
+{FATOR f=null; OPERADOR op=null; EXP exp1=null; EXP exp2=null;}
 {
-  regraFator()| (<APARENT> regraExp() regraOp() regraExp() <FPARENT>)
+  (f = regraFator()| (<APARENT> exp1=regraExp() op = regraOp() exp2 =regraExp() <FPARENT>))
+  {System.out.println("cheguei aqui");}
+  {return new EXP(exp1,op,exp2);}
 }
 
-void regraFator():
-{}
+FATOR regraFator():
+{Token t; boolean regras; ArrayList<Boolean> regrasFinais = null;}
 {
-  <TOKEN_ID> (<APARENT> regraListaExp() <FPARENT>)? 
-  | <TOKEN_NUMLITERAL>
-  | <TRUE>
-  | <FALSE>
+  (t = <TOKEN_ID> (<APARENT> regras = regraListaExp() <FPARENT>)? 
+  | t= <TOKEN_NUMLITERAL>
+  | t = <TRUE>
+  | t= <FALSE>)
+  {return new FATOR(t.image);}
 }
 
 OPERADOR regraOp():
@@ -198,10 +288,11 @@ OPERADOR regraOp():
   {return new OPERADOR(t.image);}
 }
 
-void regraListaExp():
+boolean regraListaExp():
 {}
 {
   regraExp() regraListaExpAux()
+{return true;}
 }
 
 void regraListaExpAux():
@@ -210,16 +301,22 @@ void regraListaExpAux():
   (<OPCOMMA> regraExp() regraListaExpAux())?
 }
 
-void regraFunc():
-{}
+FUNC regraFunc():
+{TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null;}
 {
-  (<FUNCTION> regraTipo() <TOKEN_ID> <APARENT> regraListaArg() <FPARENT> <ACHAVES> regraVardecl()
+  (<FUNCTION> tipo=regraTipo() id=<TOKEN_ID> <APARENT> argumentos = regraListaArg(new ArrayList<TIPO>(),new ArrayList<String>()) <FPARENT> <ACHAVES> variaveis = regraVardecl()
   regraSeqcomandos() <FCHAVES>)+
+
+  {System.out.println("BBBBBB "+ new FUNC(tipo, id.image, argumentos, variaveis).toString());}
+  {return new FUNC(tipo, id.image, argumentos, variaveis);}
 }
 
-void regraListaArg():
-{}
+LISTAARG regraListaArg(ArrayList<TIPO> tiposParam, ArrayList<String> idsParam ):
+{TIPO tipo = null; Token id = null;}
 {
-  regraTipo() <TOKEN_ID> (<OPCOMMA> regraListaArg())?
+  (tipo = regraTipo() id = <TOKEN_ID> {tiposParam.add(tipo); idsParam.add(id.image);} (<OPCOMMA> regraListaArg(tiposParam, idsParam))?)
+  {System.out.println("BBBBBB "+new LISTAARG(tiposParam, idsParam).toString());}
+  {return new LISTAARG(tiposParam, idsParam);}
+
 }
 
