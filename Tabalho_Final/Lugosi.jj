@@ -115,13 +115,20 @@ class EXP{
   OPERADOR op; 
   EXP exp1; 
   EXP exp2;
+  FATOR fator;
   public EXP(EXP exp1, OPERADOR op, EXP exp2){
     this.op=op;
     this.exp1 = exp1;
     this.exp2 = exp2;
   }
+  public EXP(FATOR fator){
+    this.fator=fator;
+  }
 public String toString(){
-    return "aolooo"; 
+  if(this.fator!=null){
+    return this.fator.toString() + "alo";
+  }
+    return this.exp1.toString() + this.op.toString() + this.exp2.toString()+ "alo" ; 
   }
 
 }
@@ -257,8 +264,15 @@ EXP regraExp():
 {FATOR f=null; OPERADOR op=null; EXP exp1=null; EXP exp2=null;}
 {
   (f = regraFator()| (<APARENT> exp1=regraExp() op = regraOp() exp2 =regraExp() <FPARENT>))
-  {System.out.println("cheguei aqui");}
-  {return new EXP(exp1,op,exp2);}
+  {if(f==null){
+    System.out.println(new EXP(exp1,op,exp2).toString());
+    return new EXP(exp1,op,exp2);
+    } else{
+      System.out.println(new EXP(f).toString());
+    return new EXP(f);
+    }
+  }
+
 }
 
 FATOR regraFator():

@@ -115,13 +115,20 @@ class EXP{
   OPERADOR op;
   EXP exp1;
   EXP exp2;
+  FATOR fator;
   public EXP(EXP exp1, OPERADOR op, EXP exp2){
     this.op=op;
     this.exp1 = exp1;
     this.exp2 = exp2;
   }
+  public EXP(FATOR fator){
+    this.fator=fator;
+  }
 public String toString(){
-    return "aolooo";
+  if(this.fator!=null){
+    return this.fator.toString() + "alo";
+  }
+    return this.exp1.toString() + this.op.toString() + this.exp2.toString()+ "alo" ;
   }
 
 }
@@ -335,8 +342,13 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-   System.out.println("cheguei aqui");
-   {if (true) return new EXP(exp1,op,exp2);}
+   if(f==null){
+    System.out.println(new EXP(exp1,op,exp2).toString());
+    {if (true) return new EXP(exp1,op,exp2);}
+    } else{
+      System.out.println(new EXP(f).toString());
+    {if (true) return new EXP(f);}
+    }
     throw new Error("Missing return statement in function");
   }
 
