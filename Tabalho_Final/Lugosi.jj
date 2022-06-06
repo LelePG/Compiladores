@@ -102,11 +102,19 @@ class SEQCOMANDOS{}
 
 class FATOR{
   String fator;
+  LISTAEXP exps;
   public FATOR(String fator){
     this.fator=fator;
   }
+  public FATOR(String fator, LISTAEXP exps){
+    this.fator=fator;
+    this.exps = exps;
+  }
 public String toString(){
-    return fator; 
+  if(this.exps!=null){
+  return fator + "GGGGGGGGG " + exps.toString();
+  }
+    return fator + "FATP"; 
   }
 
 }
@@ -280,10 +288,8 @@ EXP regraExp():
 {
   (f = regraFator()| (<APARENT> exp1=regraExp() op = regraOp() exp2 =regraExp() <FPARENT>))
   {if(f==null){
-    System.out.println(new EXP(exp1,op,exp2).toString());
     return new EXP(exp1,op,exp2);
     } else{
-      System.out.println(new EXP(f).toString());
     return new EXP(f);
     }
   }
@@ -291,13 +297,13 @@ EXP regraExp():
 }
 
 FATOR regraFator():
-{Token t; LISTAEXP regras; ArrayList<Boolean> regrasFinais = null;}
+{Token t; LISTAEXP regras = null;}
 {
   (t = <TOKEN_ID> (<APARENT> regras = regraListaExp(new ArrayList<EXP>()) <FPARENT>)? 
   | t= <TOKEN_NUMLITERAL>
   | t = <TRUE>
   | t= <FALSE>)
-  {return new FATOR(t.image);}
+  {return new FATOR(t.image, regras);}
 }
 
 OPERADOR regraOp():
@@ -319,7 +325,6 @@ LISTAEXP regraListaExp(ArrayList<EXP> exps):
 { EXP exp = null;}
 {
   exp = regraExp() {exps.add(exp);} regraListaExpAux(exps)
-  {System.out.println( new LISTAEXP(exps).toString());}
 {return new LISTAEXP(exps);}
 }
 

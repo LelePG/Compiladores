@@ -102,11 +102,19 @@ class SEQCOMANDOS{}
 
 class FATOR{
   String fator;
+  LISTAEXP exps;
   public FATOR(String fator){
     this.fator=fator;
   }
+  public FATOR(String fator, LISTAEXP exps){
+    this.fator=fator;
+    this.exps = exps;
+  }
 public String toString(){
-    return fator;
+  if(this.exps!=null){
+  return fator + "GGGGGGGGG " + exps.toString();
+  }
+    return fator + "FATP";
   }
 
 }
@@ -358,17 +366,15 @@ public class Lugosi implements LugosiConstants {
       throw new ParseException();
     }
    if(f==null){
-    System.out.println(new EXP(exp1,op,exp2).toString());
     {if (true) return new EXP(exp1,op,exp2);}
     } else{
-      System.out.println(new EXP(f).toString());
     {if (true) return new EXP(f);}
     }
     throw new Error("Missing return statement in function");
   }
 
   static final public FATOR regraFator() throws ParseException {
- Token t; LISTAEXP regras; ArrayList<Boolean> regrasFinais = null;
+ Token t; LISTAEXP regras = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TOKEN_ID:
       t = jj_consume_token(TOKEN_ID);
@@ -397,7 +403,7 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-   {if (true) return new FATOR(t.image);}
+   {if (true) return new FATOR(t.image, regras);}
     throw new Error("Missing return statement in function");
   }
 
@@ -445,7 +451,6 @@ public class Lugosi implements LugosiConstants {
     exp = regraExp();
                     exps.add(exp);
     regraListaExpAux(exps);
-   System.out.println( new LISTAEXP(exps).toString());
  {if (true) return new LISTAEXP(exps);}
     throw new Error("Missing return statement in function");
   }
