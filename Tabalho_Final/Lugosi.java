@@ -90,15 +90,98 @@ public String toString(){
 class COMANDO{
 }
 class COMANDOCONTROLADO extends COMANDO{
-  ArrayList<EXP> exps;
-        ArrayList<String> seqcomandos;
+  EXP exp;
+        SEQCOMANDOS seqcomandos;
 }
 
-class IF extends COMANDOCONTROLADO{}
-class WHILE extends COMANDOCONTROLADO{}
-class DOWHILE extends COMANDOCONTROLADO{}
+class IF extends COMANDOCONTROLADO{
+  public IF (EXP exp,   SEQCOMANDOS seqcomandos){
+    this.exp= exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "if(" + this.exp.toString() + "){\u005cn";
+    acumulador+= this.seqcomandos.toString() + "\u005cn}\u005cn";
+    return acumulador;
+  }
+}
+class WHILE extends COMANDOCONTROLADO{
+   public WHILE (EXP exp,       SEQCOMANDOS seqcomandos){
+    this.exp = exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "while(" + this.exp.toString() + "){\u005cn";
+    acumulador+= this.seqcomandos.toString() + "\u005cn}\u005cn";
+    return acumulador;
+  }
+}
+class DOWHILE extends COMANDOCONTROLADO{
+   public DOWHILE (EXP exp,     SEQCOMANDOS seqcomandos){
+    this.exp = exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "do{\u005cn" + this.seqcomandos.toString();
+    acumulador+= "}while(" + this.exp.toString() + ");\u005cn";
+    return acumulador;
+  }
+}
 
-class SEQCOMANDOS{}
+class COMANDOSAIDA extends COMANDO{
+  EXP exp;
+}
+
+class PRINT extends COMANDOSAIDA{
+  public PRINT(EXP exp){
+    this.exp = exp;
+  }
+
+  public String toString(){
+    return "print(" + this.exp.toString()+");\u005cn";
+  }
+}
+
+class RETURN extends COMANDOSAIDA{
+  public RETURN(EXP exp){
+    this.exp = exp;
+  }
+
+  public String toString(){
+    return "return" + this.exp.toString()+";\u005cn";
+  }
+}
+
+class ATRIB extends COMANDOSAIDA{
+  String id;
+  public ATRIB(String id, EXP exp){
+    this.exp = exp;
+    this.id = id;
+  }
+
+  public String toString(){
+    return this.id +" = " + this.exp.toString()+";\u005cn";
+  }
+}
+
+class CHAMADA extends COMANDO{
+  String id;
+  LISTAEXP exps;
+  public CHAMADA(String id, LISTAEXP exps){
+    this.exps = exps;
+    this.id = id;
+  }
+
+  public String toString(){
+    if(this.exps != null){
+    return this.id +"(" + this.exps.toString()+");\u005cn";
+    };
+        return this.id +"();\u005cn";
+
+  }
+}
+
+
 
 class FATOR{
   String fator;
@@ -141,18 +224,21 @@ public String toString(){
 
 }
 
-class LISTAEXP{
-        ArrayList<EXP> exps;
-        public LISTAEXP (ArrayList<EXP> exps){
-    this.exps = exps;
+class SEQCOMANDOS{
+        ArrayList<COMANDO> comandos;
+        public SEQCOMANDOS (ArrayList<COMANDO> comandos){
+    this.comandos = comandos;
+  }
+  public SEQCOMANDOS (){
+    this.comandos = null;
   }
 public String toString(){
   String acumulador = "";
-  for(int i = 0; i< this.exps.size(); i++){
-    acumulador+= this.exps.get(i).toString();
-  if(i< this.exps.size()-1){
-    acumulador+=", ";
+  if(this.comandos == null){
+    return "";
   }
+  for(int i = 0; i< this.comandos.size(); i++){
+    acumulador+= this.comandos.get(i) + "/n";
   }
     return acumulador;
   }
@@ -235,6 +321,7 @@ public class Lugosi implements LugosiConstants {
   }
 
   static final public SEQCOMANDOS regraSeqcomandos() throws ParseException {
+ ArrayList<COMANDO> comandos = new ArrayList(); COMANDO com = null;
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -250,14 +337,16 @@ public class Lugosi implements LugosiConstants {
         jj_la1[3] = jj_gen;
         break label_2;
       }
-      regraComando();
+      com = regraComando();
+                         comandos.add(com);
     }
-   {if (true) return new SEQCOMANDOS();}
+     System.out.println(new SEQCOMANDOS(comandos).toString());
+   {if (true) return new SEQCOMANDOS(comandos);}
     throw new Error("Missing return statement in function");
   }
 
   static final public COMANDO regraComando() throws ParseException {
- Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null;
+ Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null; COMANDO com = null; LISTAEXP exps = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TOKEN_ID:
       tPrincipal = jj_consume_token(TOKEN_ID);
@@ -266,6 +355,7 @@ public class Lugosi implements LugosiConstants {
         jj_consume_token(ATTRIB);
         exp = regraExp();
         jj_consume_token(SEMI);
+                                                               com = new ATRIB(tPrincipal.image,exp);
         break;
       case APARENT:
         jj_consume_token(APARENT);
@@ -275,7 +365,7 @@ public class Lugosi implements LugosiConstants {
         case FALSE:
         case TOKEN_ID:
         case TOKEN_NUMLITERAL:
-          regraListaExp(new ArrayList<EXP>());
+          exps = regraListaExp(new ArrayList<EXP>());
           break;
         default:
           jj_la1[4] = jj_gen;
@@ -289,6 +379,7 @@ public class Lugosi implements LugosiConstants {
         jj_consume_token(-1);
         throw new ParseException();
       }
+                                                                                                                                                                                    com = new CHAMADA(tPrincipal.image,exps);
       break;
     case IF:
       tPrincipal = jj_consume_token(IF);
@@ -296,9 +387,10 @@ public class Lugosi implements LugosiConstants {
       exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(ACHAVES);
-      regraSeqcomandos();
+      seqcomandos = regraSeqcomandos();
       jj_consume_token(FCHAVES);
       jj_consume_token(SEMI);
+                                                                                                                        com = new IF(exp,seqcomandos);
       break;
     case WHILE:
       tPrincipal = jj_consume_token(WHILE);
@@ -307,25 +399,28 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(FPARENT);
       jj_consume_token(DO);
       jj_consume_token(ACHAVES);
-      regraSeqcomandos();
+      seqcomandos = regraSeqcomandos();
       jj_consume_token(FCHAVES);
       jj_consume_token(SEMI);
+                                                                                                                               com = new WHILE(exp,seqcomandos);
       break;
     case DO:
       tPrincipal = jj_consume_token(DO);
       jj_consume_token(ACHAVES);
-      regraSeqcomandos();
+      seqcomandos = regraSeqcomandos();
       jj_consume_token(FCHAVES);
       jj_consume_token(WHILE);
       jj_consume_token(APARENT);
       exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(SEMI);
+                                                                                                                              com = new DOWHILE(exp,seqcomandos);
       break;
     case RETURN:
       tPrincipal = jj_consume_token(RETURN);
       exp = regraExp();
       jj_consume_token(SEMI);
+                                                 com = new RETURN(exp);
       break;
     case PRINT:
       tPrincipal = jj_consume_token(PRINT);
@@ -333,14 +428,15 @@ public class Lugosi implements LugosiConstants {
       exp = regraExp();
       jj_consume_token(FPARENT);
       jj_consume_token(SEMI);
+                                                                    com = new PRINT(exp);
       break;
     default:
       jj_la1[6] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
- System.out.println("AAAA"+ tPrincipal.image);
- {if (true) return new COMANDO();}
+ System.out.println(com.toString());
+ {if (true) return com;}
     throw new Error("Missing return statement in function");
   }
 

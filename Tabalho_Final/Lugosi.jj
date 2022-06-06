@@ -90,15 +90,98 @@ public String toString(){
 class COMANDO{
 }
 class COMANDOCONTROLADO extends COMANDO{
-  ArrayList<EXP> exps;
-	ArrayList<String> seqcomandos;
+  EXP exp;
+	SEQCOMANDOS seqcomandos;
 }
 
-class IF extends COMANDOCONTROLADO{}
-class WHILE extends COMANDOCONTROLADO{}
-class DOWHILE extends COMANDOCONTROLADO{}
+class IF extends COMANDOCONTROLADO{
+  public IF (EXP exp,	SEQCOMANDOS seqcomandos){
+    this.exp= exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "if(" + this.exp.toString() + "){\n";
+    acumulador+= this.seqcomandos.toString() + "\n}\n";
+    return acumulador;
+  }
+}
+class WHILE extends COMANDOCONTROLADO{
+   public WHILE (EXP exp,	SEQCOMANDOS seqcomandos){
+    this.exp = exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "while(" + this.exp.toString() + "){\n";
+    acumulador+= this.seqcomandos.toString() + "\n}\n";
+    return acumulador;
+  }
+}
+class DOWHILE extends COMANDOCONTROLADO{
+   public DOWHILE (EXP exp,	SEQCOMANDOS seqcomandos){
+    this.exp = exp;
+    this.seqcomandos = seqcomandos;
+  }
+  public String toString(){
+    String acumulador = "do{\n" + this.seqcomandos.toString();
+    acumulador+= "}while(" + this.exp.toString() + ");\n";
+    return acumulador;
+  }
+}
 
-class SEQCOMANDOS{}
+class COMANDOSAIDA extends COMANDO{
+  EXP exp;
+}
+
+class PRINT extends COMANDOSAIDA{
+  public PRINT(EXP exp){
+    this.exp = exp;
+  }
+
+  public String toString(){
+    return "print(" + this.exp.toString()+");\n";
+  }
+}
+
+class RETURN extends COMANDOSAIDA{
+  public RETURN(EXP exp){
+    this.exp = exp;
+  }
+
+  public String toString(){
+    return "return" + this.exp.toString()+";\n";
+  }
+}
+
+class ATRIB extends COMANDOSAIDA{
+  String id;
+  public ATRIB(String id, EXP exp){
+    this.exp = exp;
+    this.id = id;
+  }
+
+  public String toString(){
+    return this.id +" = " + this.exp.toString()+";\n";
+  }
+}
+
+class CHAMADA extends COMANDO{
+  String id;
+  LISTAEXP exps;
+  public CHAMADA(String id, LISTAEXP exps){
+    this.exps = exps;
+    this.id = id;
+  }
+
+  public String toString(){
+    if(this.exps != null){
+    return this.id +"(" + this.exps.toString()+");\n";
+    };
+        return this.id +"();\n";
+
+  }
+}
+
+
 
 class FATOR{
   String fator;
@@ -141,18 +224,21 @@ public String toString(){
 
 }
 
-class LISTAEXP{
-	ArrayList<EXP> exps;
-	public LISTAEXP (ArrayList<EXP> exps){
-    this.exps = exps;
+class SEQCOMANDOS{
+	ArrayList<COMANDO> comandos;
+	public SEQCOMANDOS (ArrayList<COMANDO> comandos){
+    this.comandos = comandos;
+  }
+  public SEQCOMANDOS (){
+    this.comandos = null;
   }
 public String toString(){
   String acumulador = "";
-  for(int i = 0; i< this.exps.size(); i++){
-    acumulador+= this.exps.get(i).toString();
-  if(i< this.exps.size()-1){
-    acumulador+=", ";
+  if(this.comandos == null){
+    return "";
   }
+  for(int i = 0; i< this.comandos.size(); i++){
+    acumulador+= this.comandos.get(i) + "/n";
   }
     return acumulador;
   }
@@ -262,23 +348,24 @@ TIPO regraTipo():
 }
 
 SEQCOMANDOS regraSeqcomandos():
-{}
+{ArrayList<COMANDO> comandos = new ArrayList(); COMANDO com = null;}
 {
-  (regraComando())*
-  {return new SEQCOMANDOS();}
+  (com = regraComando() {comandos.add(com);})*
+    {System.out.println(new SEQCOMANDOS(comandos).toString());}
+  {return new SEQCOMANDOS(comandos);}
 }
 
 COMANDO regraComando():
-{Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null; }
+{Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null; COMANDO com = null; LISTAEXP exps = null;}
 {
-  (tPrincipal = <TOKEN_ID> ((<ATTRIB> exp = regraExp() <SEMI>)|(<APARENT> (regraListaExp(new ArrayList<EXP>()))? <FPARENT> <SEMI>))
-|  tPrincipal = <IF> <APARENT> exp = regraExp() <FPARENT> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
-| tPrincipal = <WHILE> <APARENT> exp = regraExp() <FPARENT> <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
-| tPrincipal= <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> exp = regraExp() <FPARENT> <SEMI> 
-| tPrincipal = <RETURN> exp = regraExp() <SEMI> 
-| tPrincipal = <PRINT> <APARENT> exp = regraExp() <FPARENT> <SEMI>)
-{System.out.println("AAAA"+ tPrincipal.image);}
-{return new COMANDO();}
+  (tPrincipal = <TOKEN_ID> ((<ATTRIB> exp = regraExp() <SEMI>){com = new ATRIB(tPrincipal.image,exp);}|(<APARENT> (exps = regraListaExp(new ArrayList<EXP>()))? <FPARENT> <SEMI>)) {com = new CHAMADA(tPrincipal.image,exps);}
+|  tPrincipal = <IF> <APARENT> exp = regraExp() <FPARENT> <ACHAVES>  seqcomandos = regraSeqcomandos() <FCHAVES> <SEMI> {com = new IF(exp,seqcomandos);}
+| tPrincipal = <WHILE> <APARENT> exp = regraExp() <FPARENT> <DO> <ACHAVES>  seqcomandos = regraSeqcomandos() <FCHAVES> <SEMI> {com = new WHILE(exp,seqcomandos);}
+| tPrincipal= <DO> <ACHAVES>  seqcomandos = regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> exp = regraExp() <FPARENT> <SEMI> {com = new DOWHILE(exp,seqcomandos);}
+| tPrincipal = <RETURN> exp = regraExp() <SEMI> {com = new RETURN(exp);}
+| tPrincipal = <PRINT> <APARENT> exp = regraExp() <FPARENT> <SEMI> {com = new PRINT(exp);})
+{System.out.println(com.toString());}
+{return com;}
 
   
 }
