@@ -16,11 +16,5 @@ function void levarGuardaChuva(int estaCaaaahovendo, float precisoCaminhaaar){
 }
 
 
-function void levarGuardaChuva(bool estaChovendo, bool precisoCaminhar){
-    if ((estaChovendo && precisoCaminhar)) {
-        print(true);
-    };
-    return 1;
-}
 
 

@@ -69,23 +69,40 @@ public String toString(){
   String id;
   LISTAARG argumentos;
   VARDECL variaveis;
+  SEQCOMANDOS seqcomandos;
 
-public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis)
+public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis, SEQCOMANDOS seqcomandos)
 {
     this.tipo = tipo;
     this.id = id;
     this.argumentos=argumentos;
     this.variaveis = variaveis;
+    this.seqcomandos = seqcomandos;
   }
 public String toString(){
-  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos+")"+"{" ;
+  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos.toString()+"){\u005cn" ;
   acumulador+=variaveis.toString();
+  acumulador+=seqcomandos.toString();
   acumulador+="}";
   return acumulador;
 
 }
 }
 
+class IMPRIMEFUNCS{
+        ArrayList<FUNC> funcs;
+
+public IMPRIMEFUNCS(ArrayList<FUNC> funcs){
+    this.funcs = funcs;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.funcs.size(); i++){
+    acumulador+= this.funcs.get(i);
+  }
+    return acumulador;
+  }
+}
 
 class COMANDO{
 }
@@ -244,6 +261,21 @@ public String toString(){
   }
   }
 
+
+  class MAIN{
+    VARDECL variaveis;
+    SEQCOMANDOS seqcomandos;
+    public MAIN(VARDECL variaveis, SEQCOMANDOS seqcomandos){
+      this.variaveis = variaveis;
+      this.seqcomandos = seqcomandos;
+    }
+
+    public String toString(){
+      String acumulador = "main{\u005cn" + this.variaveis.toString() + this.seqcomandos.toString() +"}\u005cn";
+      return acumulador;
+    }
+  }
+
 public class Lugosi implements LugosiConstants {
 
   public static void main(String args[]) throws ParseException,IOException {
@@ -253,25 +285,31 @@ public class Lugosi implements LugosiConstants {
   }
 
   static final public void Lugosi() throws ParseException {
- Token t;
-    regraMain();
+ MAIN main = null; FUNC funcao; ArrayList<FUNC> funcoes = new ArrayList();
+    main = regraMain();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case FUNCTION:
-      regraFunc();
+      funcao = regraFunc();
+                       funcoes.add(funcao);
       break;
     default:
       jj_la1[0] = jj_gen;
       ;
     }
+ System.out.println("-------------------------\u005cn" + main.toString() + new IMPRIMEFUNCS(funcoes).toString()+"\u005cn------------------------------------");
     jj_consume_token(0);
   }
 
-  static final public void regraMain() throws ParseException {
+  static final public MAIN regraMain() throws ParseException {
+ VARDECL variaveis = null; SEQCOMANDOS seqcomandos = null;
     jj_consume_token(MAIN);
     jj_consume_token(ACHAVES);
-    regraVardecl();
-    regraSeqcomandos();
+    variaveis = regraVardecl();
+    seqcomandos = regraSeqcomandos();
     jj_consume_token(FCHAVES);
+     System.out.println(new MAIN(variaveis, seqcomandos).toString());
+   {if (true) return new MAIN(variaveis, seqcomandos);}
+    throw new Error("Missing return statement in function");
   }
 
   static final public VARDECL regraVardecl() throws ParseException {
@@ -567,7 +605,7 @@ public class Lugosi implements LugosiConstants {
   }
 
   static final public FUNC regraFunc() throws ParseException {
- TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null;
+ TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null; SEQCOMANDOS seqcomandos;
     label_3:
     while (true) {
       jj_consume_token(FUNCTION);
@@ -578,7 +616,7 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(FPARENT);
       jj_consume_token(ACHAVES);
       variaveis = regraVardecl();
-      regraSeqcomandos();
+      seqcomandos = regraSeqcomandos();
       jj_consume_token(FCHAVES);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case FUNCTION:
@@ -589,7 +627,7 @@ public class Lugosi implements LugosiConstants {
         break label_3;
       }
     }
-   {if (true) return new FUNC(tipo, id.image, argumentos, variaveis);}
+   {if (true) return new FUNC(tipo, id.image, argumentos, variaveis, seqcomandos);}
     throw new Error("Missing return statement in function");
   }
 

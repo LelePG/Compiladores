@@ -69,23 +69,40 @@ public String toString(){
   String id;
   LISTAARG argumentos;
   VARDECL variaveis;
+  SEQCOMANDOS seqcomandos;
 
-public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis)
+public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis, SEQCOMANDOS seqcomandos)
 {
     this.tipo = tipo;
     this.id = id;
     this.argumentos=argumentos;
     this.variaveis = variaveis;
+    this.seqcomandos = seqcomandos;
   }
 public String toString(){
-  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos+")"+"{" ;
+  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos.toString()+"){\n" ;
   acumulador+=variaveis.toString();
+  acumulador+=seqcomandos.toString();
   acumulador+="}";
   return acumulador;
   
 }
 }
 
+class IMPRIMEFUNCS{
+	ArrayList<FUNC> funcs;
+
+public IMPRIMEFUNCS(ArrayList<FUNC> funcs){
+    this.funcs = funcs;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.funcs.size(); i++){
+    acumulador+= this.funcs.get(i);
+  }
+    return acumulador;
+  }
+}
 
 class COMANDO{
 }
@@ -244,6 +261,21 @@ public String toString(){
   }
   }
 
+
+  class MAIN{
+    VARDECL variaveis; 
+    SEQCOMANDOS seqcomandos;
+    public MAIN(VARDECL variaveis, SEQCOMANDOS seqcomandos){
+      this.variaveis = variaveis;
+      this.seqcomandos = seqcomandos;
+    }
+
+    public String toString(){
+      String acumulador = "main{\n" + this.variaveis.toString() + this.seqcomandos.toString() +"}\n";
+      return acumulador;
+    }
+  }
+
 public class Lugosi {
 
   public static void main(String args[]) throws ParseException,IOException {
@@ -315,20 +347,24 @@ TOKEN :
 
 
 void Lugosi () :
-{Token t;}
+{MAIN main = null; FUNC funcao; ArrayList<FUNC> funcoes = new ArrayList();}
 {
-regraMain()
-(regraFunc())?
+main = regraMain()
+(funcao = regraFunc() {funcoes.add(funcao);})?
+{System.out.println("-------------------------\n" + main.toString() + new IMPRIMEFUNCS(funcoes).toString()+"\n------------------------------------");}
 <EOF> 
 }
 
-void regraMain():
-{}
+MAIN regraMain():
+{VARDECL variaveis = null; SEQCOMANDOS seqcomandos = null;}
 {
   <MAIN> <ACHAVES>
-  regraVardecl()
-  regraSeqcomandos()
+  variaveis = regraVardecl()
+  seqcomandos = regraSeqcomandos()
   <FCHAVES>
+    {System.out.println(new MAIN(variaveis, seqcomandos).toString());}
+
+  {return new MAIN(variaveis, seqcomandos);}
 
 }
 
@@ -422,12 +458,12 @@ void regraListaExpAux(ArrayList<EXP> exps):
 }
 
 FUNC regraFunc():
-{TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null;}
+{TIPO tipo = null; Token id = null; LISTAARG argumentos = null; VARDECL variaveis = null; SEQCOMANDOS seqcomandos;}
 {
   (<FUNCTION> tipo=regraTipo() id=<TOKEN_ID> <APARENT> argumentos = regraListaArg(new ArrayList<TIPO>(),new ArrayList<String>()) <FPARENT> <ACHAVES> variaveis = regraVardecl()
-  regraSeqcomandos() <FCHAVES>)+
+  seqcomandos = regraSeqcomandos() <FCHAVES>)+
 
-  {return new FUNC(tipo, id.image, argumentos, variaveis);}
+  {return new FUNC(tipo, id.image, argumentos, variaveis, seqcomandos);}
 }
 
 LISTAARG regraListaArg(ArrayList<TIPO> tiposParam, ArrayList<String> idsParam ):
