@@ -133,6 +133,23 @@ public String toString(){
 
 }
 
+class LISTAEXP{
+        ArrayList<EXP> exps;
+        public LISTAEXP (ArrayList<EXP> exps){
+    this.exps = exps;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.exps.size(); i++){
+    acumulador+= this.exps.get(i).toString();
+  if(i< this.exps.size()-1){
+    acumulador+=", ";
+  }
+  }
+    return acumulador;
+  }
+  }
+
 public class Lugosi implements LugosiConstants {
 
   public static void main(String args[]) throws ParseException,IOException {
@@ -181,7 +198,6 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(SEMI);
                                                     tipos.add(tipo); ids.add(id.image);
     }
-   System.out.println("AAAAAA"+new VARDECL(tipos, ids).toString());
    {if (true) return new VARDECL(tipos, ids);}
     throw new Error("Missing return statement in function");
   }
@@ -206,7 +222,6 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
-   System.out.println("AAAA"+new TIPO(t.image).toString());
    {if (true) return new TIPO(t.image);}
     throw new Error("Missing return statement in function");
   }
@@ -252,7 +267,7 @@ public class Lugosi implements LugosiConstants {
         case FALSE:
         case TOKEN_ID:
         case TOKEN_NUMLITERAL:
-          regraListaExp();
+          regraListaExp(new ArrayList<EXP>());
           break;
         default:
           jj_la1[4] = jj_gen;
@@ -353,14 +368,14 @@ public class Lugosi implements LugosiConstants {
   }
 
   static final public FATOR regraFator() throws ParseException {
- Token t; boolean regras; ArrayList<Boolean> regrasFinais = null;
+ Token t; LISTAEXP regras; ArrayList<Boolean> regrasFinais = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case TOKEN_ID:
       t = jj_consume_token(TOKEN_ID);
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
       case APARENT:
         jj_consume_token(APARENT);
-        regras = regraListaExp();
+        regras = regraListaExp(new ArrayList<EXP>());
         jj_consume_token(FPARENT);
         break;
       default:
@@ -421,24 +436,28 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
- System.out.println("AAAA"+new OPERADOR(t.image).toString());
    {if (true) return new OPERADOR(t.image);}
     throw new Error("Missing return statement in function");
   }
 
-  static final public boolean regraListaExp() throws ParseException {
-    regraExp();
-    regraListaExpAux();
- {if (true) return true;}
+  static final public LISTAEXP regraListaExp(ArrayList<EXP> exps) throws ParseException {
+  EXP exp = null;
+    exp = regraExp();
+                    exps.add(exp);
+    regraListaExpAux(exps);
+   System.out.println( new LISTAEXP(exps).toString());
+ {if (true) return new LISTAEXP(exps);}
     throw new Error("Missing return statement in function");
   }
 
-  static final public void regraListaExpAux() throws ParseException {
+  static final public void regraListaExpAux(ArrayList<EXP> exps) throws ParseException {
+ EXP exp = null;
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case OPCOMMA:
       jj_consume_token(OPCOMMA);
-      regraExp();
-      regraListaExpAux();
+      exp = regraExp();
+                               exps.add(exp);
+      regraListaExpAux(exps);
       break;
     default:
       jj_la1[11] = jj_gen;
@@ -469,7 +488,6 @@ public class Lugosi implements LugosiConstants {
         break label_3;
       }
     }
-   System.out.println("BBBBBB "+ new FUNC(tipo, id.image, argumentos, variaveis).toString());
    {if (true) return new FUNC(tipo, id.image, argumentos, variaveis);}
     throw new Error("Missing return statement in function");
   }
@@ -488,7 +506,6 @@ public class Lugosi implements LugosiConstants {
       jj_la1[13] = jj_gen;
       ;
     }
-   System.out.println("BBBBBB "+new LISTAARG(tiposParam, idsParam).toString());
    {if (true) return new LISTAARG(tiposParam, idsParam);}
     throw new Error("Missing return statement in function");
   }

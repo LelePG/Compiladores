@@ -9,6 +9,7 @@ main{
 
 function void levarGuardaChuva(int estaCaaaahovendo, float precisoCaminhaaar){
     if ((estaChovendo && precisoCaminhar)) {
+        estaChovendo ((true && true),(false||false));
         print(true);
     };
     return 1;

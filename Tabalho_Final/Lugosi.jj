@@ -133,6 +133,23 @@ public String toString(){
 
 }
 
+class LISTAEXP{
+	ArrayList<EXP> exps;
+	public LISTAEXP (ArrayList<EXP> exps){
+    this.exps = exps;
+  }
+public String toString(){
+  String acumulador = "";
+  for(int i = 0; i< this.exps.size(); i++){
+    acumulador+= this.exps.get(i).toString();
+  if(i< this.exps.size()-1){
+    acumulador+=", ";
+  }
+  }
+    return acumulador;
+  }
+  }
+
 public class Lugosi {
 
   public static void main(String args[]) throws ParseException,IOException {
@@ -225,7 +242,6 @@ VARDECL regraVardecl():
 {ArrayList<TIPO> tipos = new ArrayList(); ArrayList<String> ids = new ArrayList(); TIPO tipo = null; Token id = null;}
 {
   (<VAR> tipo = regraTipo() id = <TOKEN_ID> <SEMI> {tipos.add(tipo); ids.add(id.image);})*
-  {System.out.println("AAAAAA"+new VARDECL(tipos, ids).toString());}
   {return new VARDECL(tipos, ids);}
 }
 
@@ -234,7 +250,6 @@ TIPO regraTipo():
 {
    (t = <INT> |t = <BOOL> | t =<FLOAT> | t =<VOID>)
 
-  {System.out.println("AAAA"+new TIPO(t.image).toString());}
   {return new TIPO(t.image);}
 }
 
@@ -248,7 +263,7 @@ SEQCOMANDOS regraSeqcomandos():
 COMANDO regraComando():
 {Token tPrincipal=null; EXP exp = null; SEQCOMANDOS seqcomandos = null; }
 {
-  (tPrincipal = <TOKEN_ID> ((<ATTRIB> exp = regraExp() <SEMI>)|(<APARENT> (regraListaExp())? <FPARENT> <SEMI>))
+  (tPrincipal = <TOKEN_ID> ((<ATTRIB> exp = regraExp() <SEMI>)|(<APARENT> (regraListaExp(new ArrayList<EXP>()))? <FPARENT> <SEMI>))
 |  tPrincipal = <IF> <APARENT> exp = regraExp() <FPARENT> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
 | tPrincipal = <WHILE> <APARENT> exp = regraExp() <FPARENT> <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <SEMI> 
 | tPrincipal= <DO> <ACHAVES>  regraSeqcomandos() <FCHAVES> <WHILE> <APARENT> exp = regraExp() <FPARENT> <SEMI> 
@@ -276,9 +291,9 @@ EXP regraExp():
 }
 
 FATOR regraFator():
-{Token t; boolean regras; ArrayList<Boolean> regrasFinais = null;}
+{Token t; LISTAEXP regras; ArrayList<Boolean> regrasFinais = null;}
 {
-  (t = <TOKEN_ID> (<APARENT> regras = regraListaExp() <FPARENT>)? 
+  (t = <TOKEN_ID> (<APARENT> regras = regraListaExp(new ArrayList<EXP>()) <FPARENT>)? 
   | t= <TOKEN_NUMLITERAL>
   | t = <TRUE>
   | t= <FALSE>)
@@ -297,22 +312,21 @@ OPERADOR regraOp():
 | t = <OPMENORQ>
 | t = <OPMAIORQ>
 | t = <OPIGUAL>)
-
-{System.out.println("AAAA"+new OPERADOR(t.image).toString());}
   {return new OPERADOR(t.image);}
 }
 
-boolean regraListaExp():
-{}
+LISTAEXP regraListaExp(ArrayList<EXP> exps):
+{ EXP exp = null;}
 {
-  regraExp() regraListaExpAux()
-{return true;}
+  exp = regraExp() {exps.add(exp);} regraListaExpAux(exps)
+  {System.out.println( new LISTAEXP(exps).toString());}
+{return new LISTAEXP(exps);}
 }
 
-void regraListaExpAux():
-{}
+void regraListaExpAux(ArrayList<EXP> exps):
+{EXP exp = null;}
 {
-  (<OPCOMMA> regraExp() regraListaExpAux())?
+  (<OPCOMMA> exp = regraExp() {exps.add(exp);} regraListaExpAux(exps))?
 }
 
 FUNC regraFunc():
@@ -321,7 +335,6 @@ FUNC regraFunc():
   (<FUNCTION> tipo=regraTipo() id=<TOKEN_ID> <APARENT> argumentos = regraListaArg(new ArrayList<TIPO>(),new ArrayList<String>()) <FPARENT> <ACHAVES> variaveis = regraVardecl()
   regraSeqcomandos() <FCHAVES>)+
 
-  {System.out.println("BBBBBB "+ new FUNC(tipo, id.image, argumentos, variaveis).toString());}
   {return new FUNC(tipo, id.image, argumentos, variaveis);}
 }
 
@@ -329,7 +342,6 @@ LISTAARG regraListaArg(ArrayList<TIPO> tiposParam, ArrayList<String> idsParam ):
 {TIPO tipo = null; Token id = null;}
 {
   (tipo = regraTipo() id = <TOKEN_ID> {tiposParam.add(tipo); idsParam.add(id.image);} (<OPCOMMA> regraListaArg(tiposParam, idsParam))?)
-  {System.out.println("BBBBBB "+new LISTAARG(tiposParam, idsParam).toString());}
   {return new LISTAARG(tiposParam, idsParam);}
 
 }
