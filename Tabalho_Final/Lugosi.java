@@ -2,326 +2,335 @@
 import java.io.*;
 import java.util.ArrayList;
 
-
-class TIPO{
+class TIPO {
   String tipo;
-  public TIPO(String tipo){
-    this.tipo=tipo;
+  public TIPO(String tipo) {
+    this.tipo = tipo;
   }
-public String toString(){
-  if(this.tipo.equals("bool")){
-    return "boolean";
-  }
+  public String toString() {
+    if (this.tipo.equals("bool")) {
+      return "boolean";
+    }
     return tipo;
   }
 
 }
 
-class OPERADOR{
+class OPERADOR {
   String op;
-  public OPERADOR(String op){
-    this.op=op;
+  public OPERADOR(String op) {
+    this.op = op;
   }
-public String toString(){
+  public String toString() {
     return op;
   }
 
 }
 
-class VARDECL{
-        ArrayList<TIPO> tipos;
-        ArrayList<String> ids;
+class VARDECL {
+  ArrayList < TIPO > tipos;
+  ArrayList < String > ids;
 
-public VARDECL(ArrayList<TIPO> tipos, ArrayList<String> ids){
+  public VARDECL(ArrayList < TIPO > tipos, ArrayList < String > ids) {
     this.tipos = tipos;
     this.ids = ids;
   }
-public String toString(){
-  String acumulador = "";
-  for(int i = 0; i< this.tipos.size(); i++){
-    acumulador+= this.tipos.get(i)+ " " + this.ids.get(i) +";\u005cn";
-  }
+  public String toString() {
+    String acumulador = "";
+    for (int i = 0; i < this.tipos.size(); i++) {
+      acumulador += this.tipos.get(i) + " " + this.ids.get(i) + ";\u005cn";
+    }
     return acumulador;
   }
 }
 
-class LISTAARG{
-        ArrayList<TIPO> tipos;
-        ArrayList<String> ids;
+class LISTAARG {
+  ArrayList < TIPO > tipos;
+  ArrayList < String > ids;
 
-public LISTAARG(ArrayList<TIPO> tipos, ArrayList<String> ids){
+  public LISTAARG(ArrayList < TIPO > tipos, ArrayList < String > ids) {
     this.tipos = tipos;
     this.ids = ids;
   }
-public String toString(){
-  String acumulador = "";
-  for(int i = 0; i< this.tipos.size(); i++){
-    acumulador+= this.tipos.get(i)+ " " + this.ids.get(i);
-  if(i< this.tipos.size()-1){
-    acumulador+=",";
-  }
-  }
+  public String toString() {
+    String acumulador = "";
+    for (int i = 0; i < this.tipos.size(); i++) {
+      acumulador += this.tipos.get(i) + " " + this.ids.get(i);
+      if (i < this.tipos.size() - 1) {
+        acumulador += ",";
+      }
+    }
     return acumulador;
   }
 }
 
-
-
-        class FUNC{
-    TIPO tipo;
+class FUNC {
+  TIPO tipo;
   String id;
   LISTAARG argumentos;
   VARDECL variaveis;
   SEQCOMANDOS seqcomandos;
 
-public FUNC(TIPO tipo,String id, LISTAARG argumentos, VARDECL variaveis, SEQCOMANDOS seqcomandos)
-{
+  public FUNC(TIPO tipo, String id, LISTAARG argumentos, VARDECL variaveis, SEQCOMANDOS seqcomandos) {
     this.tipo = tipo;
     this.id = id;
-    this.argumentos=argumentos;
+    this.argumentos = argumentos;
     this.variaveis = variaveis;
     this.seqcomandos = seqcomandos;
   }
-public String toString(){
-  String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos.toString()+"){\u005cn" ;
-  acumulador+=variaveis.toString();
-  acumulador+=seqcomandos.toString();
-  acumulador+="}\u005cn";
-  return acumulador;
+  public String toString() {
+    String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos.toString() + "){\u005cn";
+    acumulador += variaveis.toString();
+    acumulador += seqcomandos.toString();
+    acumulador += "}\u005cn";
+    return acumulador;
 
+  }
 }
-}
 
-class IMPRIMEFUNCS{
-        ArrayList<FUNC> funcs;
+class IMPRIMEFUNCS {
+  ArrayList < FUNC > funcs;
 
-public IMPRIMEFUNCS(ArrayList<FUNC> funcs){
+  public IMPRIMEFUNCS(ArrayList < FUNC > funcs) {
     this.funcs = funcs;
   }
-public String toString(){
-  String acumulador = "";
-  for(int i = 0; i< this.funcs.size(); i++){
-    acumulador+= this.funcs.get(i);
-  }
+  public String toString() {
+    String acumulador = "";
+    for (int i = 0; i < this.funcs.size(); i++) {
+      acumulador += this.funcs.get(i);
+    }
     return acumulador;
   }
 }
 
-class COMANDO{
-}
-class COMANDOCONTROLADO extends COMANDO{
+class COMANDO {}
+class COMANDOCONTROLADO extends COMANDO {
   EXP exp;
-        SEQCOMANDOS seqcomandos;
+  SEQCOMANDOS seqcomandos;
 }
 
-class IF extends COMANDOCONTROLADO{
-  public IF (EXP exp,   SEQCOMANDOS seqcomandos){
-    this.exp= exp;
+class IF extends COMANDOCONTROLADO {
+  public IF(EXP exp, SEQCOMANDOS seqcomandos) {
+    this.exp = exp;
     this.seqcomandos = seqcomandos;
   }
-  public String toString(){
+  public String toString() {
     String acumulador = "if(" + this.exp.toString() + "){\u005cn";
-    acumulador+= this.seqcomandos.toString() + "}\u005cn";
+    acumulador += this.seqcomandos.toString() + "}\u005cn";
     return acumulador;
   }
 }
-class WHILE extends COMANDOCONTROLADO{
-   public WHILE (EXP exp,       SEQCOMANDOS seqcomandos){
+class WHILE extends COMANDOCONTROLADO {
+  public WHILE(EXP exp, SEQCOMANDOS seqcomandos) {
     this.exp = exp;
     this.seqcomandos = seqcomandos;
   }
-  public String toString(){
+  public String toString() {
     String acumulador = "while(" + this.exp.toString() + "){\u005cn";
-    acumulador+= this.seqcomandos.toString() + "}\u005cn";
+    acumulador += this.seqcomandos.toString() + "}\u005cn";
     return acumulador;
   }
 }
-class DOWHILE extends COMANDOCONTROLADO{
-   public DOWHILE (EXP exp,     SEQCOMANDOS seqcomandos){
+class DOWHILE extends COMANDOCONTROLADO {
+  public DOWHILE(EXP exp, SEQCOMANDOS seqcomandos) {
     this.exp = exp;
     this.seqcomandos = seqcomandos;
   }
-  public String toString(){
+  public String toString() {
     String acumulador = "do{\u005cn" + this.seqcomandos.toString();
-    acumulador+= "}while(" + this.exp.toString() + ");\u005cn";
+    acumulador += "}while(" + this.exp.toString() + ");\u005cn";
     return acumulador;
   }
 }
 
-class COMANDOSAIDA extends COMANDO{
+class COMANDOSAIDA extends COMANDO {
   EXP exp;
 }
 
-class PRINT extends COMANDOSAIDA{
-  public PRINT(EXP exp){
+class PRINT extends COMANDOSAIDA {
+  public PRINT(EXP exp) {
     this.exp = exp;
   }
 
-  public String toString(){
-    return "System.out.println(" + this.exp.toString()+");\u005cn";
+  public String toString() {
+    return "System.out.println(" + this.exp.toString() + ");\u005cn";
   }
 }
 
-class RETURN extends COMANDOSAIDA{
-  public RETURN(EXP exp){
+class RETURN extends COMANDOSAIDA {
+  public RETURN(EXP exp) {
     this.exp = exp;
   }
 
-  public String toString(){
-    return "return " + this.exp.toString()+";\u005cn";
+  public String toString() {
+    return "return " + this.exp.toString() + ";\u005cn";
   }
 }
 
-class ATRIB extends COMANDOSAIDA{
+class ATRIB extends COMANDOSAIDA {
   String id;
-  public ATRIB(String id, EXP exp){
+  public ATRIB(String id, EXP exp) {
     this.exp = exp;
     this.id = id;
   }
 
-  public String toString(){
-    return this.id +" = " + this.exp.toString()+";\u005cn";
+  public String toString() {
+    return this.id + " = " + this.exp.toString() + ";\u005cn";
   }
 }
 
-class CHAMADA extends COMANDO{
+class CHAMADA extends COMANDO {
   String id;
   LISTAEXP exps;
-  public CHAMADA(String id, LISTAEXP exps){
+  public CHAMADA(String id, LISTAEXP exps) {
     this.exps = exps;
     this.id = id;
   }
 
-  public String toString(){
-    if(this.exps != null){
-    return this.id +"(" + this.exps.toString()+");\u005cn";
+  public String toString() {
+    if (this.exps != null) {
+      return this.id + "(" + this.exps.toString() + ");\u005cn";
     };
-        return this.id +"();\u005cn";
+    return this.id + "();\u005cn";
 
   }
 }
 
-
-
-class FATOR{
+class FATOR {
   String fator;
   LISTAEXP exps;
-  public FATOR(String fator){
-    this.fator=fator;
+  public FATOR(String fator) {
+    this.fator = fator;
   }
-  public FATOR(String fator, LISTAEXP exps){
-    this.fator=fator;
+  public FATOR(String fator, LISTAEXP exps) {
+    this.fator = fator;
     this.exps = exps;
   }
-public String toString(){
-  if(this.exps!=null){
-  return fator + exps.toString();
-  }
+  public String toString() {
+    if (this.exps != null) {
+      return fator + exps.toString();
+    }
     return fator;
   }
 
 }
 
-class EXP{
+class EXP {
   OPERADOR op;
   EXP exp1;
   EXP exp2;
   FATOR fator;
-  public EXP(EXP exp1, OPERADOR op, EXP exp2){
-    this.op=op;
+  public EXP(EXP exp1, OPERADOR op, EXP exp2) {
+    this.op = op;
     this.exp1 = exp1;
     this.exp2 = exp2;
   }
-  public EXP(FATOR fator){
-    this.fator=fator;
+  public EXP(FATOR fator) {
+    this.fator = fator;
   }
-public String toString(){
-  if(this.fator!=null){
-    return this.fator.toString();
-  }
-    return this.exp1.toString() + " " + this.op.toString() +" "+ this.exp2.toString() ;
+  public String toString() {
+    if (this.fator != null) {
+      return this.fator.toString();
+    }
+    return this.exp1.toString() + " " + this.op.toString() + " " + this.exp2.toString();
   }
 
 }
 
-class SEQCOMANDOS{
-        ArrayList<COMANDO> comandos;
-        public SEQCOMANDOS (ArrayList<COMANDO> comandos){
-    this.comandos = comandos;
+class LISTAEXP {
+  ArrayList < EXP > exps;
+  public LISTAEXP(ArrayList < EXP > exps) {
+    this.exps = exps;
   }
-  public SEQCOMANDOS (){
-    this.comandos = null;
-  }
-public String toString(){
-  String acumulador = "";
-  if(this.comandos == null){
-    return "";
-  }
-  for(int i = 0; i< this.comandos.size(); i++){
-    acumulador+= this.comandos.get(i);
-  }
+  public String toString() {
+    String acumulador = "";
+    for (int i = 0; i < this.exps.size(); i++) {
+      acumulador += this.exps.get(i).toString();
+      if (i < this.exps.size() - 1) {
+        acumulador += ", ";
+      }
+    }
     return acumulador;
   }
+}
+
+class SEQCOMANDOS {
+  ArrayList < COMANDO > comandos;
+  public SEQCOMANDOS(ArrayList < COMANDO > comandos) {
+    this.comandos = comandos;
+  }
+  public SEQCOMANDOS() {
+    this.comandos = null;
+  }
+  public String toString() {
+    String acumulador = "";
+    if (this.comandos == null) {
+      return "";
+    }
+    for (int i = 0; i < this.comandos.size(); i++) {
+      acumulador += this.comandos.get(i);
+    }
+    return acumulador;
+  }
+}
+
+class MAIN {
+  VARDECL variaveis;
+  SEQCOMANDOS seqcomandos;
+  public MAIN(VARDECL variaveis, SEQCOMANDOS seqcomandos) {
+    this.variaveis = variaveis;
+    this.seqcomandos = seqcomandos;
   }
 
+  public String toString() {
+    String acumulador = "public static void main(String args[]) throws Exception {\u005cn" + this.variaveis.toString() + this.seqcomandos.toString() + "}\u005cn";
+    return acumulador;
+  }
+}
 
-  class MAIN{
-    VARDECL variaveis;
-    SEQCOMANDOS seqcomandos;
-    public MAIN(VARDECL variaveis, SEQCOMANDOS seqcomandos){
-      this.variaveis = variaveis;
-      this.seqcomandos = seqcomandos;
-    }
-
-    public String toString(){
-      String acumulador = "public static void main(String args[]) throws Exception {\u005cn" + this.variaveis.toString() + this.seqcomandos.toString() +"}\u005cn";
-      return acumulador;
-    }
+class ARVORELUGOSI {
+  MAIN main;
+  FUNC funcao;
+  String nome = "main";
+  public ARVORELUGOSI(MAIN main, FUNC funcao) {
+    this.main = main;
+    this.funcao = funcao;
   }
 
-  class ARVORELUGOSI{
-    MAIN main;
-    FUNC funcao;
-    String nome = "main";
-    public ARVORELUGOSI( MAIN main,FUNC funcao){
-      this.main = main;
-      this.funcao = funcao;
-    }
-
-    public void setNome(String nome){
-      this.nome = nome;
-    }
-     public String toString(){
-      String acumulador = "public class "+this.nome+"{\u005cn" + this.main.toString();
-      if(this.funcao != null){
-        acumulador+= "static "+ this.funcao.toString();
-      }
-      return acumulador + "}";
-    }
+  public void setNome(String nome) {
+    this.nome = nome;
   }
+  public String toString() {
+    String acumulador = "public class " + this.nome + "{\u005cn" + this.main.toString();
+    if (this.funcao != null) {
+      acumulador += "static " + this.funcao.toString();
+    }
+    return acumulador + "}";
+  }
+}
 
 public class Lugosi implements LugosiConstants {
 
-  public static void main(String args[]) throws ParseException,IOException {
+  public static void main(String args[]) throws ParseException, IOException {
 
-  FileInputStream fs = new FileInputStream(new File(args[0]));
- Lugosi parser = new Lugosi(fs);
- ARVORELUGOSI arvore = parser.Lugosi();
+    FileInputStream fs = new FileInputStream(new File(args[0]));
+    Lugosi parser = new Lugosi(fs);
+    ARVORELUGOSI arvore = parser.Lugosi();
 
- geraCodigo(arvore, args[0]);
+    geraCodigo(arvore, args[0]);
   }
 
-  public static void geraCodigo(ARVORELUGOSI prog, String arquivo){
-    try{
-              String[] nomeSeparado = arquivo.split("\u005c\u005c.");
-              String nomeFinal = nomeSeparado[0]+".java";
-prog.setNome(nomeSeparado[0]);
-    FileWriter arquivoFinal = new FileWriter(nomeFinal);
+  public static void geraCodigo(ARVORELUGOSI prog, String arquivo) {
+    try {
+      String[] nomeSeparado = arquivo.split("\u005c\u005c.");
+      String nomeFinal = nomeSeparado[0] + ".java";
+      prog.setNome(nomeSeparado[0]);
+      FileWriter arquivoFinal = new FileWriter(nomeFinal);
       arquivoFinal.write(prog.toString());
       arquivoFinal.close();
-    System.out.println("C\u00f3digo gerado com sucesso");
-    } catch (IOException e){
-    System.out.println("N\u00e3o foi poss\u00edvel gerar o arquivo");
+      System.out.println("C\u00f3digo gerado com sucesso");
+    } catch (IOException e) {
+      System.out.println("N\u00e3o foi poss\u00edvel gerar o arquivo");
       e.printStackTrace();
 
     }

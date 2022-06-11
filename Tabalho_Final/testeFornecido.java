@@ -5,8 +5,7 @@ boolean precisoCaminharHoje;
 int outraCoisa;
 estaChovendoHoje = true;
 precisoCaminharHoje = false;
-int a = levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje);
-System.out.println(a);
+levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje);
 }
 static int levarGuardaChuva(boolean estaChovendo,boolean precisoCaminhar){
 if(estaChovendo && precisoCaminhar){
