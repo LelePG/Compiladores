@@ -1,7 +1,6 @@
 main{
     var bool estaChovendoHoje;
     var bool precisoCaminharHoje;
-    var int outraCoisa;
     estaChovendoHoje:=true;
     precisoCaminharHoje:=false;
     levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje);
@@ -11,9 +10,5 @@ function int levarGuardaChuva(bool estaChovendo, bool precisoCaminhar){
     if ((estaChovendo && precisoCaminhar)) {
         print(true);
     };
-    return 1;
+    return (3+3);
 }
-
-
-
-
