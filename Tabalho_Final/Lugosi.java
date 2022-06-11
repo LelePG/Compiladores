@@ -9,6 +9,9 @@ class TIPO{
     this.tipo=tipo;
   }
 public String toString(){
+  if(this.tipo.equals("bool")){
+    return "boolean";
+  }
     return tipo;
   }
 
@@ -83,7 +86,7 @@ public String toString(){
   String acumulador = this.tipo.toString() + " " + this.id + "(" + this.argumentos.toString()+"){\u005cn" ;
   acumulador+=variaveis.toString();
   acumulador+=seqcomandos.toString();
-  acumulador+="}";
+  acumulador+="}\u005cn";
   return acumulador;
 
 }
@@ -118,7 +121,7 @@ class IF extends COMANDOCONTROLADO{
   }
   public String toString(){
     String acumulador = "if(" + this.exp.toString() + "){\u005cn";
-    acumulador+= this.seqcomandos.toString() + "\u005cn}\u005cn";
+    acumulador+= this.seqcomandos.toString() + "}\u005cn";
     return acumulador;
   }
 }
@@ -129,7 +132,7 @@ class WHILE extends COMANDOCONTROLADO{
   }
   public String toString(){
     String acumulador = "while(" + this.exp.toString() + "){\u005cn";
-    acumulador+= this.seqcomandos.toString() + "\u005cn}\u005cn";
+    acumulador+= this.seqcomandos.toString() + "}\u005cn";
     return acumulador;
   }
 }
@@ -155,7 +158,7 @@ class PRINT extends COMANDOSAIDA{
   }
 
   public String toString(){
-    return "print(" + this.exp.toString()+");\u005cn";
+    return "System.out.println(" + this.exp.toString()+");\u005cn";
   }
 }
 
@@ -165,7 +168,7 @@ class RETURN extends COMANDOSAIDA{
   }
 
   public String toString(){
-    return "return" + this.exp.toString()+";\u005cn";
+    return "return " + this.exp.toString()+";\u005cn";
   }
 }
 
@@ -212,9 +215,9 @@ class FATOR{
   }
 public String toString(){
   if(this.exps!=null){
-  return fator + "GGGGGGGGG " + exps.toString();
+  return fator + exps.toString();
   }
-    return fator + "FATP";
+    return fator;
   }
 
 }
@@ -234,9 +237,9 @@ class EXP{
   }
 public String toString(){
   if(this.fator!=null){
-    return this.fator.toString() + "alo";
+    return this.fator.toString();
   }
-    return this.exp1.toString() + this.op.toString() + this.exp2.toString()+ "alo" ;
+    return this.exp1.toString() + " " + this.op.toString() +" "+ this.exp2.toString() ;
   }
 
 }
@@ -255,7 +258,7 @@ public String toString(){
     return "";
   }
   for(int i = 0; i< this.comandos.size(); i++){
-    acumulador+= this.comandos.get(i) + "/n";
+    acumulador+= this.comandos.get(i);
   }
     return acumulador;
   }
@@ -271,8 +274,29 @@ public String toString(){
     }
 
     public String toString(){
-      String acumulador = "main{\u005cn" + this.variaveis.toString() + this.seqcomandos.toString() +"}\u005cn";
+      String acumulador = "public static void main(String args[]) throws Exception {\u005cn" + this.variaveis.toString() + this.seqcomandos.toString() +"}\u005cn";
       return acumulador;
+    }
+  }
+
+  class ARVORELUGOSI{
+    MAIN main;
+    FUNC funcao;
+    String nome = "main";
+    public ARVORELUGOSI( MAIN main,FUNC funcao){
+      this.main = main;
+      this.funcao = funcao;
+    }
+
+    public void setNome(String nome){
+      this.nome = nome;
+    }
+     public String toString(){
+      String acumulador = "public class "+this.nome+"{\u005cn" + this.main.toString();
+      if(this.funcao != null){
+        acumulador+= "static "+ this.funcao.toString();
+      }
+      return acumulador + "}";
     }
   }
 
@@ -280,12 +304,31 @@ public class Lugosi implements LugosiConstants {
 
   public static void main(String args[]) throws ParseException,IOException {
 
- Lugosi analisador = new Lugosi(new FileInputStream(args[0]));
- analisador.Lugosi();
+  FileInputStream fs = new FileInputStream(new File(args[0]));
+ Lugosi parser = new Lugosi(fs);
+ ARVORELUGOSI arvore = parser.Lugosi();
+
+ geraCodigo(arvore, args[0]);
   }
 
-  static final public void Lugosi() throws ParseException {
- MAIN main = null; FUNC funcao; ArrayList<FUNC> funcoes = new ArrayList();
+  public static void geraCodigo(ARVORELUGOSI prog, String arquivo){
+    try{
+              String[] nomeSeparado = arquivo.split("\u005c\u005c.");
+              String nomeFinal = nomeSeparado[0]+".java";
+prog.setNome(nomeSeparado[0]);
+    FileWriter arquivoFinal = new FileWriter(nomeFinal);
+      arquivoFinal.write(prog.toString());
+      arquivoFinal.close();
+    System.out.println("C\u00f3digo gerado com sucesso");
+    } catch (IOException e){
+    System.out.println("N\u00e3o foi poss\u00edvel gerar o arquivo");
+      e.printStackTrace();
+
+    }
+  }
+
+  static final public ARVORELUGOSI Lugosi() throws ParseException {
+ MAIN main = null; FUNC funcao = null; ArrayList<FUNC> funcoes = new ArrayList();
     main = regraMain();
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
     case FUNCTION:
@@ -296,8 +339,9 @@ public class Lugosi implements LugosiConstants {
       jj_la1[0] = jj_gen;
       ;
     }
- System.out.println("-------------------------\u005cn" + main.toString() + new IMPRIMEFUNCS(funcoes).toString()+"\u005cn------------------------------------");
+  {if (true) return new ARVORELUGOSI(main,funcao);}
     jj_consume_token(0);
+    throw new Error("Missing return statement in function");
   }
 
   static final public MAIN regraMain() throws ParseException {
@@ -307,7 +351,6 @@ public class Lugosi implements LugosiConstants {
     variaveis = regraVardecl();
     seqcomandos = regraSeqcomandos();
     jj_consume_token(FCHAVES);
-     System.out.println(new MAIN(variaveis, seqcomandos).toString());
    {if (true) return new MAIN(variaveis, seqcomandos);}
     throw new Error("Missing return statement in function");
   }
@@ -378,7 +421,6 @@ public class Lugosi implements LugosiConstants {
       com = regraComando();
                          comandos.add(com);
     }
-     System.out.println(new SEQCOMANDOS(comandos).toString());
    {if (true) return new SEQCOMANDOS(comandos);}
     throw new Error("Missing return statement in function");
   }
@@ -411,13 +453,13 @@ public class Lugosi implements LugosiConstants {
         }
         jj_consume_token(FPARENT);
         jj_consume_token(SEMI);
+                                                                                                                                                                                    com = new CHAMADA(tPrincipal.image,exps);
         break;
       default:
         jj_la1[5] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
-                                                                                                                                                                                    com = new CHAMADA(tPrincipal.image,exps);
       break;
     case IF:
       tPrincipal = jj_consume_token(IF);
@@ -473,7 +515,6 @@ public class Lugosi implements LugosiConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
- System.out.println(com.toString());
  {if (true) return com;}
     throw new Error("Missing return statement in function");
   }

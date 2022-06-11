@@ -2,14 +2,13 @@ main{
     var bool estaChovendoHoje;
     var bool precisoCaminharHoje;
     var int outraCoisa;
-    estaChovendo:=true;
-    precisoCaminhar:=false;
+    estaChovendoHoje:=true;
+    precisoCaminharHoje:=false;
     levarGuardaChuva(estaChovendoHoje, precisoCaminharHoje);
 }
 
-function void levarGuardaChuva(int estaCaaaahovendo, float precisoCaminhaaar){
+function int levarGuardaChuva(bool estaChovendo, bool precisoCaminhar){
     if ((estaChovendo && precisoCaminhar)) {
-        estaChovendo ((true && true),(false||false));
         print(true);
     };
     return 1;
